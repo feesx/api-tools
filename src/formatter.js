@@ -3,11 +3,599 @@ let currentXML = null;
 let nodeIdCounter = 0;
 let formatTimeout = null;
 let currentTab = 'json';
+let currentLanguage = 'zh'; // 默认中文
+
+// 文件大小格式化函数
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 语言配置
+const translations = {
+    en: {
+        // 标题和标签
+        title: 'API Tools',
+        tabs: {
+            postman: 'API Testing',
+            json: 'JSON Formatter',
+            xml: 'XML Formatter'
+        },
+        // JSON部分
+        json: {
+            input: 'Input',
+            output: 'Formatted Result',
+            copy: 'Copy',
+            clear: 'Clear',
+            expandAll: 'Expand All',
+            collapseAll: 'Collapse All',
+            download: 'Download',
+            placeholder: 'Paste JSON string here...',
+            emptyState: 'Formatted content will appear here',
+            stats: 'Stats: {keys} keys {values} values {objects} objects {arrays} arrays {strings} strings {numbers} numbers {booleans} booleans {nulls} nulls'
+        },
+        // XML部分
+        xml: {
+            input: 'Input',
+            output: 'Formatted Result',
+            copy: 'Copy',
+            clear: 'Clear',
+            download: 'Download',
+            placeholder: 'Paste XML string here...',
+            emptyState: 'Formatted content will appear here'
+        },
+        // Postman部分
+        postman: {
+            history: 'HISTORY',
+            import: 'Import',
+            export: 'Export',
+            clearHistory: 'Clear',
+            search: 'Search',
+            noHistory: 'No request history',
+            requestConfig: 'Request Configuration',
+            response: 'Response',
+            send: 'Send',
+            params: 'QUERY PARAMETERS',
+            headers: 'HEADERS',
+            body: 'BODY',
+            key: 'KEY',
+            value: 'VALUE',
+            description: 'DESCRIPTION',
+            action: 'ACTION',
+            addParameter: 'Add Parameter',
+            addHeader: 'Add Header',
+            addFormData: 'Add Form Data',
+            bodyTypes: {
+                raw: 'Raw',
+                formData: 'Form-Data',
+                urlEncoded: 'x-www-form-urlencoded',
+                file: 'File'
+            },
+            format: 'Format:',
+            formatBody: 'Format',
+            clearBody: 'Clear',
+            noFile: 'No file selected',
+            responseEmpty: 'Response result will appear here',
+            status: 'Status:',
+            time: 'Time:',
+            size: 'Size:',
+            copyResponse: 'Copy Response',
+            downloadResponse: 'Download Response',
+            formatOptions: {
+                json: 'JSON',
+                xml: 'XML',
+                text: 'Text'
+            },
+            formDataTypes: {
+                text: 'Text',
+                file: 'File'
+            }
+        },
+        // 消息
+        messages: {
+            jsonError: 'JSON parse error: {error}',
+            xmlError: 'XML parse error: {error}',
+            requestError: 'Request failed: {error}',
+            noUrl: 'Please enter URL',
+            requestSuccess: 'Request successful',
+            bodyFormatted: 'Body formatted',
+            noContent: 'No content to format',
+            textNoFormat: 'Text format does not need formatting',
+            copied: 'Copied to clipboard',
+            copyFailed: 'Copy failed: {error}',
+            downloaded: 'Response downloaded',
+            noResponse: 'No response content to copy',
+            noResponseDownload: 'No response content to download',
+            requestCleared: 'Request cleared'
+        }
+    },
+    zh: {
+        // 标题和标签
+        title: 'API 工具',
+        tabs: {
+            postman: 'API测试',
+            json: 'JSON格式化',
+            xml: 'XML格式化'
+        },
+        // JSON部分
+        json: {
+            input: '输入',
+            output: '格式化结果',
+            copy: '复制',
+            clear: '清空',
+            expandAll: '展开全部',
+            collapseAll: '折叠全部',
+            download: '下载',
+            placeholder: '在此粘贴JSON字符串...',
+            emptyState: '格式化后的内容将显示在这里',
+            stats: '统计: {keys}键 {values}值 {objects}对象 {arrays}数组 {strings}字符串 {numbers}数字 {booleans}布尔 {nulls}null'
+        },
+        // XML部分
+        xml: {
+            input: '输入',
+            output: '格式化结果',
+            copy: '复制',
+            clear: '清空',
+            download: '下载',
+            placeholder: '在此粘贴XML字符串...',
+            emptyState: '格式化后的内容将显示在这里'
+        },
+        // Postman部分
+        postman: {
+            history: '历史记录',
+            import: '导入',
+            export: '导出',
+            clearHistory: '清空',
+            search: '搜索',
+            noHistory: '暂无请求历史',
+            requestConfig: '请求配置',
+            response: '响应',
+            send: '发送',
+            params: '查询参数',
+            headers: '请求头',
+            body: '请求体',
+            key: '键',
+            value: '值',
+            description: '描述',
+            action: '操作',
+            addParameter: '添加参数',
+            addHeader: '添加请求头',
+            addFormData: '添加表单数据',
+            bodyTypes: {
+                raw: '原始',
+                formData: '表单数据',
+                urlEncoded: '表单编码',
+                file: '文件'
+            },
+            format: '格式:',
+            formatBody: '格式化',
+            clearBody: '清空',
+            noFile: '未选择文件',
+            responseEmpty: '响应结果将显示在这里',
+            status: '状态:',
+            time: '耗时:',
+            size: '大小:',
+            copyResponse: '复制响应',
+            downloadResponse: '下载响应',
+            formatOptions: {
+                json: 'JSON',
+                xml: 'XML',
+                text: '文本'
+            },
+            formDataTypes: {
+                text: '文本',
+                file: '文件'
+            }
+        },
+        // 消息
+        messages: {
+            jsonError: 'JSON解析错误: {error}',
+            xmlError: 'XML解析错误: {error}',
+            requestError: '请求失败: {error}',
+            noUrl: '请输入URL',
+            requestSuccess: '请求成功',
+            bodyFormatted: 'Body已格式化',
+            noContent: '没有内容可格式化',
+            textNoFormat: '文本格式不需要格式化',
+            copied: '已复制到剪贴板',
+            copyFailed: '复制失败: {error}',
+            downloaded: '响应已下载',
+            noResponse: '没有响应内容可复制',
+            noResponseDownload: '没有响应内容可下载',
+            requestCleared: '请求已清空'
+        }
+    }
+};
+
+// 语言切换函数
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    applyLanguage();
+}
+
+// 应用语言
+function applyLanguage() {
+    try {
+        console.log('applyLanguage called with currentLanguage:', currentLanguage);
+        const t = translations[currentLanguage];
+        console.log('Translation data:', t);
+        
+        // 更新标题
+        const headerTitle = document.querySelector('.header h1');
+        if (headerTitle) {
+            headerTitle.textContent = t.title;
+        }
+        
+        // 更新标签
+        const postmanTab = document.querySelector('.tab[data-tab="postman"]');
+        if (postmanTab) {
+            postmanTab.textContent = t.tabs.postman;
+        }
+        
+        const jsonTab = document.querySelector('.tab[data-tab="json"]');
+        if (jsonTab) {
+            jsonTab.textContent = t.tabs.json;
+        }
+        
+        const xmlTab = document.querySelector('.tab[data-tab="xml"]');
+        if (xmlTab) {
+            xmlTab.textContent = t.tabs.xml;
+        }
+        
+        // 更新JSON部分
+        const jsonInputHeader = document.querySelector('#jsonContainer .panel-header:nth-child(1) h2');
+        if (jsonInputHeader) {
+            jsonInputHeader.textContent = t.json.input;
+        }
+        
+        const copyInputBtn = document.querySelector('#copyInputBtn');
+        if (copyInputBtn) {
+            copyInputBtn.textContent = t.json.copy;
+        }
+        
+        const clearInputBtn = document.querySelector('#clearInputBtn');
+        if (clearInputBtn) {
+            clearInputBtn.textContent = t.json.clear;
+        }
+        
+        const jsonOutputPanelHeader = document.getElementById('jsonOutputPanelHeader');
+        if (jsonOutputPanelHeader) {
+            jsonOutputPanelHeader.textContent = t.json.output;
+        }
+        
+        const expandAllBtn = document.querySelector('#expandAllBtn');
+        if (expandAllBtn) {
+            expandAllBtn.textContent = t.json.expandAll;
+        }
+        
+        const collapseAllBtn = document.querySelector('#collapseAllBtn');
+        if (collapseAllBtn) {
+            collapseAllBtn.textContent = t.json.collapseAll;
+        }
+        
+        const copyOutputBtn = document.querySelector('#copyOutputBtn');
+        if (copyOutputBtn) {
+            copyOutputBtn.textContent = t.json.copy;
+        }
+        
+        const downloadBtn = document.querySelector('#downloadBtn');
+        if (downloadBtn) {
+            downloadBtn.textContent = t.json.download;
+        }
+        
+        const jsonInput = document.getElementById('jsonInput');
+        if (jsonInput) {
+            jsonInput.placeholder = t.json.placeholder;
+        }
+        
+        const emptyStateP = document.querySelector('#emptyState p');
+        if (emptyStateP) {
+            emptyStateP.textContent = t.json.emptyState;
+        }
+        
+        // 更新XML部分
+        const xmlInputHeader = document.querySelector('#xmlContainer .panel-header:nth-child(1) h2');
+        if (xmlInputHeader) {
+            xmlInputHeader.textContent = t.xml.input;
+        }
+        
+        const copyXmlInputBtn = document.querySelector('#copyXmlInputBtn');
+        if (copyXmlInputBtn) {
+            copyXmlInputBtn.textContent = t.xml.copy;
+        }
+        
+        const clearXmlInputBtn = document.querySelector('#clearXmlInputBtn');
+        if (clearXmlInputBtn) {
+            clearXmlInputBtn.textContent = t.xml.clear;
+        }
+        
+        const xmlOutputPanelHeader = document.getElementById('xmlOutputPanelHeader');
+        if (xmlOutputPanelHeader) {
+            xmlOutputPanelHeader.textContent = t.xml.output;
+        }
+        
+        const copyXmlOutputBtn = document.querySelector('#copyXmlOutputBtn');
+        if (copyXmlOutputBtn) {
+            copyXmlOutputBtn.textContent = t.xml.copy;
+        }
+        
+        const downloadXmlBtn = document.querySelector('#downloadXmlBtn');
+        if (downloadXmlBtn) {
+            downloadXmlBtn.textContent = t.xml.download;
+        }
+        
+        const xmlInput = document.getElementById('xmlInput');
+        if (xmlInput) {
+            xmlInput.placeholder = t.xml.placeholder;
+        }
+        
+        const xmlEmptyState = document.querySelector('#xmlEmptyState p');
+        if (xmlEmptyState) {
+            xmlEmptyState.textContent = t.xml.emptyState;
+        }
+        
+        // 更新Postman部分
+        const historyHeader = document.querySelector('.history-header h2');
+        if (historyHeader) {
+            historyHeader.textContent = t.postman.history;
+        }
+        
+        const importHistoryBtn = document.getElementById('importHistoryBtn');
+        if (importHistoryBtn) {
+            importHistoryBtn.textContent = t.postman.import;
+        }
+        
+        const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+        if (exportHistoryBtn) {
+            exportHistoryBtn.textContent = t.postman.export;
+        }
+        
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        if (clearHistoryBtn) {
+            clearHistoryBtn.textContent = t.postman.clearHistory;
+        }
+        
+        const historySearch = document.getElementById('historySearch');
+        if (historySearch) {
+            historySearch.placeholder = t.postman.search;
+        }
+        
+        const emptyHistory = document.querySelector('.empty-history p');
+        if (emptyHistory) {
+            emptyHistory.textContent = t.postman.noHistory;
+        }
+        
+        const sendRequestBtn = document.getElementById('sendRequestBtn');
+        if (sendRequestBtn) {
+            sendRequestBtn.textContent = t.postman.send;
+        }
+        
+        // 更新Postman标签页 - 只在元素存在时才设置
+        const paramsTabBtn = document.querySelector('.tab-button[data-tab="params"]');
+        if (paramsTabBtn) {
+            paramsTabBtn.textContent = t.postman.params;
+        }
+        
+        const headersTabBtn = document.querySelector('.tab-button[data-tab="headers"]');
+        if (headersTabBtn) {
+            headersTabBtn.textContent = t.postman.headers;
+        }
+        
+        const bodyTabBtn = document.querySelector('.tab-button[data-tab="body"]');
+        if (bodyTabBtn) {
+            bodyTabBtn.textContent = t.postman.body;
+        }
+        
+        // 更新参数和请求头
+        const paramHeaderKey = document.querySelector('.param-header span:nth-child(1)');
+        if (paramHeaderKey) {
+            paramHeaderKey.textContent = t.postman.key;
+        }
+        
+        const paramHeaderValue = document.querySelector('.param-header span:nth-child(2)');
+        if (paramHeaderValue) {
+            paramHeaderValue.textContent = t.postman.value;
+        }
+        
+        const paramHeaderDesc = document.querySelector('.param-header span:nth-child(3)');
+        if (paramHeaderDesc) {
+            paramHeaderDesc.textContent = t.postman.description;
+        }
+        
+        const paramHeaderAction = document.querySelector('.param-header span:nth-child(4)');
+        if (paramHeaderAction) {
+            paramHeaderAction.textContent = t.postman.action;
+        }
+        
+        const addParamBtn = document.getElementById('addParamBtn');
+        if (addParamBtn) {
+            addParamBtn.textContent = t.postman.addParameter;
+        }
+        
+        const headerHeaderKey = document.querySelector('.header-header span:nth-child(1)');
+        if (headerHeaderKey) {
+            headerHeaderKey.textContent = t.postman.key;
+        }
+        
+        const headerHeaderValue = document.querySelector('.header-header span:nth-child(2)');
+        if (headerHeaderValue) {
+            headerHeaderValue.textContent = t.postman.value;
+        }
+        
+        const headerHeaderAction = document.querySelector('.header-header span:nth-child(3)');
+        if (headerHeaderAction) {
+            headerHeaderAction.textContent = t.postman.action;
+        }
+        
+        const addHeaderBtn = document.getElementById('addHeaderBtn');
+        if (addHeaderBtn) {
+            addHeaderBtn.textContent = t.postman.addHeader;
+        }
+        
+        // 更新Body类型
+        const rawBodyBtn = document.querySelector('.body-type-btn[data-type="raw"]');
+        if (rawBodyBtn) {
+            rawBodyBtn.textContent = t.postman.bodyTypes.raw;
+        }
+        
+        const formDataBtn = document.querySelector('.body-type-btn[data-type="form-data"]');
+        if (formDataBtn) {
+            formDataBtn.textContent = t.postman.bodyTypes.formData;
+        }
+        
+        const urlEncodedBtn = document.querySelector('.body-type-btn[data-type="x-www-form-urlencoded"]');
+        if (urlEncodedBtn) {
+            urlEncodedBtn.textContent = t.postman.bodyTypes.urlEncoded;
+        }
+        
+        const fileBtn = document.querySelector('.body-type-btn[data-type="file"]');
+        if (fileBtn) {
+            fileBtn.textContent = t.postman.bodyTypes.file;
+        }
+        
+        // 更新Body内容
+        const rawBodyLabel = document.querySelector('#raw-body .body-type label');
+        if (rawBodyLabel) {
+            rawBodyLabel.textContent = t.postman.format;
+        }
+        
+        const formatBodyBtn = document.getElementById('formatBodyBtn');
+        if (formatBodyBtn) {
+            formatBodyBtn.textContent = t.postman.formatBody;
+        }
+        
+        const clearBodyBtn = document.getElementById('clearBodyBtn');
+        if (clearBodyBtn) {
+            clearBodyBtn.textContent = t.postman.clearBody;
+        }
+        
+        const fileInfo = document.getElementById('fileInfo');
+        if (fileInfo) {
+            fileInfo.textContent = t.postman.noFile;
+        }
+        
+        // 更新Form Data
+        const formDataHeaderKey = document.querySelector('.form-data-header span:nth-child(1)');
+        if (formDataHeaderKey) {
+            formDataHeaderKey.textContent = t.postman.key;
+        }
+        
+        const formDataHeaderValue = document.querySelector('.form-data-header span:nth-child(2)');
+        if (formDataHeaderValue) {
+            formDataHeaderValue.textContent = t.postman.value;
+        }
+        
+        const formDataHeaderType = document.querySelector('.form-data-header span:nth-child(3)');
+        if (formDataHeaderType) {
+            formDataHeaderType.textContent = 'TYPE';
+        }
+        
+        const formDataHeaderAction = document.querySelector('.form-data-header span:nth-child(4)');
+        if (formDataHeaderAction) {
+            formDataHeaderAction.textContent = t.postman.action;
+        }
+        
+        const addFormDataBtn = document.getElementById('addFormDataBtn');
+        if (addFormDataBtn) {
+            addFormDataBtn.textContent = t.postman.addFormData;
+        }
+        
+        // 更新URL Encoded
+        const urlEncodedHeaderKey = document.querySelector('.url-encoded-header span:nth-child(1)');
+        if (urlEncodedHeaderKey) {
+            urlEncodedHeaderKey.textContent = t.postman.key;
+        }
+        
+        const urlEncodedHeaderValue = document.querySelector('.url-encoded-header span:nth-child(2)');
+        if (urlEncodedHeaderValue) {
+            urlEncodedHeaderValue.textContent = t.postman.value;
+        }
+        
+        const urlEncodedHeaderAction = document.querySelector('.url-encoded-header span:nth-child(3)');
+        if (urlEncodedHeaderAction) {
+            urlEncodedHeaderAction.textContent = t.postman.action;
+        }
+        
+        const addUrlEncodedBtn = document.getElementById('addUrlEncodedBtn');
+        if (addUrlEncodedBtn) {
+            addUrlEncodedBtn.textContent = t.postman.addParameter;
+        }
+        
+        // 更新响应部分
+        const responseEmptyState = document.querySelector('#responseEmptyState p');
+        if (responseEmptyState) {
+            responseEmptyState.textContent = t.postman.responseEmpty;
+        }
+        
+        // 只更新标签部分，保留值
+        const responseStatus = document.querySelector('.response-info .response-status');
+        if (responseStatus) {
+            const statusSpan = responseStatus.querySelector('#responseStatus');
+            if (statusSpan) {
+                // 保留原始的标签结构，只更新值
+                // 标签已经硬编码在HTML中，不需要修改
+            }
+        }
+        
+        const responseTime = document.querySelector('.response-info .response-time');
+        if (responseTime) {
+            const timeSpan = responseTime.querySelector('#responseTime');
+            if (timeSpan) {
+                // 保留原始的标签结构，只更新值
+            }
+        }
+        
+        const responseSize = document.querySelector('.response-info .response-size');
+        if (responseSize) {
+            const sizeSpan = responseSize.querySelector('#responseSize');
+            if (sizeSpan) {
+                // 保留原始的标签结构，只更新值
+            }
+        }
+        
+        const copyResponseBtn = document.getElementById('copyResponseBtn');
+        if (copyResponseBtn) {
+            copyResponseBtn.textContent = t.postman.copyResponse;
+        }
+        
+        const downloadResponseBtn = document.getElementById('downloadResponseBtn');
+        if (downloadResponseBtn) {
+            downloadResponseBtn.textContent = t.postman.downloadResponse;
+        }
+        
+        const responsePanelHeader = document.getElementById('responsePanelHeader');
+        if (responsePanelHeader) {
+            responsePanelHeader.textContent = t.postman.response;
+        }
+        
+        // 如果当前有JSON内容，重新计算统计信息
+        if (currentJSON) {
+            formatJSON();
+        }
+    } catch (error) {
+        console.error('applyLanguage error:', error);
+        // 不抛出错误，确保应用继续运行
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOMContentLoaded ===');
     setupTabs();
     setupEventListeners();
     updateLineNumbers();
+    
+    // 语言切换事件监听
+    const languageSelect = document.getElementById('languageSelect');
+    languageSelect.addEventListener('change', function() {
+        changeLanguage(this.value);
+    });
+    // 默认选择中文
+    languageSelect.value = 'zh';
+    // 初始化语言
+    applyLanguage();
     
     const urlParams = new URLSearchParams(window.location.search);
     const jsonData = urlParams.get('data');
@@ -61,7 +649,8 @@ function switchTab(tabName) {
 }
 
 function setupEventListeners() {
-    // JSON相关事件
+    console.log('=== setupEventListeners called ===');
+    // JSON 相关事件
     document.getElementById('copyInputBtn').addEventListener('click', copyInput);
     document.getElementById('clearInputBtn').addEventListener('click', clearInput);
     document.getElementById('copyOutputBtn').addEventListener('click', copyOutput);
@@ -76,7 +665,10 @@ function setupEventListeners() {
     document.getElementById('downloadXmlBtn').addEventListener('click', downloadXmlContent);
     
     // Postman相关事件
-    document.getElementById('sendRequestBtn').addEventListener('click', sendHttpRequest);
+    const sendBtn = document.getElementById('sendRequestBtn');
+    console.log('sendRequestBtn:', sendBtn);
+    sendBtn.addEventListener('click', sendHttpRequest);
+    console.log('Event listener attached');
     
     // 初始化默认的form data项事件监听器
     initDefaultFormDataItem();
@@ -871,11 +1463,14 @@ function handleRequestInput() {
 }
 
 async function sendHttpRequest() {
+    console.log('=== sendHttpRequest called ===');
     const method = document.getElementById('requestMethod').value;
     const url = document.getElementById('requestUrl').value;
     
+    console.log('Method:', method, 'URL:', url);
+    
     if (!url) {
-        showResponseMessage('请输入URL', 'error');
+        showResponseMessage('请输入 URL', 'error');
         return;
     }
     
@@ -994,10 +1589,44 @@ async function sendHttpRequest() {
         const responseSize = new Blob([responseText]).size;
         
         // 显示响应信息
-        document.getElementById('responseStatus').textContent = `${response.status} ${response.statusText}`;
-        document.getElementById('responseTime').textContent = responseTime;
-        document.getElementById('responseSize').textContent = responseSize;
-        document.getElementById('responseInfo').style.display = 'flex';
+        console.log('=== Setting response info ===');
+        console.log('Response time value:', responseTime);
+        console.log('Response size value:', responseSize);
+        console.log('FormatFileSize function:', typeof formatFileSize);
+        
+        const responseStatusEl = document.getElementById('responseStatus');
+        console.log('responseStatusEl exists:', !!responseStatusEl);
+        if (responseStatusEl) {
+            responseStatusEl.textContent = `${response.status} ${response.statusText}`;
+            console.log('Status text set to:', responseStatusEl.textContent);
+        }
+        
+        const responseTimeEl = document.getElementById('responseTime');
+        console.log('responseTimeEl exists:', !!responseTimeEl);
+        if (responseTimeEl) {
+            responseTimeEl.textContent = responseTime;
+            console.log('Response time set to:', responseTimeEl.textContent);
+        }
+
+        const responseSizeEl = document.getElementById('responseSize');
+        console.log('responseSizeEl exists:', !!responseSizeEl);
+        console.log('responseSizeEl element:', responseSizeEl);
+        if (responseSizeEl) {
+            const formattedSize = formatFileSize(responseSize);
+            console.log('formattedSize:', formattedSize);
+            console.log('responseSizeEl before set:', responseSizeEl.textContent);
+            responseSizeEl.textContent = formattedSize;
+            console.log('responseSizeEl after set:', responseSizeEl.textContent);
+            console.log('Response size set to:', formattedSize);
+        }
+        
+        const responseInfo = document.getElementById('responseInfo');
+        console.log('responseInfo exists:', !!responseInfo);
+        if (responseInfo) {
+            console.log('responseInfo display before:', responseInfo.style.display);
+            responseInfo.style.display = 'flex';
+            console.log('responseInfo display after:', responseInfo.style.display);
+        }
         
         // 显示响应内容
         document.getElementById('responseEmptyState').style.display = 'none';

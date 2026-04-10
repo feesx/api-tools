@@ -82,7 +82,6 @@
 
         .panel-header {
             padding: 1rem 1.5rem;
-            border-bottom: 2px solid #e0e0e0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -398,16 +397,28 @@
         }
 
         .small-btn {
-            padding: 4px 8px;
-            font-size: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            background-color: #f8f9fa;
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            background-color: white;
+            color: #2196f3;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .small-btn:hover {
-            background-color: #e9ecef;
+            background-color: #2196f3;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .small-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .body-type {
@@ -547,6 +558,9 @@
             background-color: #4a5568;
             color: #e2e8f0;
             border: 1px solid #718096;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
         }
 
         .history-sidebar .small-btn:hover {
@@ -749,18 +763,19 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 20px;
-            padding: 12px;
+            padding: 16px;
             background-color: #f8f9fa;
             border-radius: 4px;
         }
 
         .method-selector select {
-            padding: 8px 12px;
+            padding: 12px 16px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 600;
             background-color: #fff;
-            min-width: 100px;
+            min-width: 120px;
         }
 
         .url-input {
@@ -769,15 +784,15 @@
 
         .url-input input {
             width: 100%;
-            padding: 8px 12px;
+            padding: 12px 16px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 16px;
             background-color: #fff;
         }
 
         .send-btn {
-            padding: 8px 24px;
+            padding: 6px 12px;
             background-color: #3182ce;
             color: white;
             border: none;
@@ -1162,14 +1177,22 @@
 <body>
     <div class="header">
         <h1>API Tools</h1>
-        <div class="tabs">
-            <button class="tab active" data-tab="postman">Postman</button>
-            <button class="tab" data-tab="json">JSON</button>
-            <button class="tab" data-tab="xml">XML</button>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="tabs">
+                <button class="tab active" data-tab="postman">Postman</button>
+                <button class="tab" data-tab="json">JSON</button>
+                <button class="tab" data-tab="xml">XML</button>
+            </div>
+            <div class="language-switcher">
+                <select id="languageSelect" class="small-btn">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <div class="main-container" id="jsonContainer">
+    <div class="main-container" id="jsonContainer" style="display: none;">
         <div class="panel">
             <div class="panel-header">
                 <h2>输入</h2>
@@ -1182,17 +1205,17 @@
                 <div class="editor-container">
                     <div class="line-numbers" id="lineNumbers">1</div>
                     <div class="editor-wrapper">
-                        <textarea id="jsonInput" placeholder="在此粘贴JSON字符串...">{
+                        <textarea id="jsonInput" placeholder="Paste JSON string here...">{
   "name": "JSON Formatter",
   "version": "1.0.0",
-  "description": "一个支持折叠功能的JSON格式化工具",
+  "description": "A JSON formatter with collapse/expand functionality",
   "features": [
-    "格式化JSON",
-    "语法高亮",
-    "错误验证",
-    "复制功能",
-    "下载功能",
-    "折叠展开"
+    "Format JSON",
+    "Syntax highlighting",
+    "Error validation",
+    "Copy function",
+    "Download function",
+    "Collapse/expand"
   ],
   "settings": {
     "theme": "light",
@@ -1223,7 +1246,7 @@
         
         <div class="panel">
             <div class="panel-header">
-                <h2>格式化结果</h2>
+                <h2 id="jsonOutputPanelHeader">格式化结果</h2>
                 <div class="actions">
                     <button class="action-btn expand-all-btn" id="expandAllBtn">展开全部</button>
                     <button class="action-btn collapse-all-btn" id="collapseAllBtn">折叠全部</button>
@@ -1260,16 +1283,16 @@
                 <div class="editor-container">
                     <div class="line-numbers" id="xmlLineNumbers">1</div>
                     <div class="editor-wrapper">
-                        <textarea id="xmlInput" placeholder="在此粘贴XML字符串..."><?xml version="1.0" encoding="UTF-8"?>
+                        <textarea id="xmlInput" placeholder="Paste XML string here..."><?xml version="1.0" encoding="UTF-8"?>
 <root>
   <name>XML Formatter</name>
   <version>1.0.0</version>
-  <description>一个支持格式化的XML工具</description>
+  <description>An XML formatter tool with formatting support</description>
   <features>
-    <feature>格式化XML</feature>
-    <feature>语法高亮</feature>
-    <feature>错误验证</feature>
-    <feature>复制功能</feature>
+    <feature>Format XML</feature>
+    <feature>Syntax highlighting</feature>
+    <feature>Error validation</feature>
+    <feature>Copy function</feature>
   </features>
   <settings>
     <theme>light</theme>
@@ -1288,7 +1311,7 @@
         
         <div class="panel">
             <div class="panel-header">
-                <h2>格式化结果</h2>
+                <h2 id="xmlOutputPanelHeader">格式化结果</h2>
                 <div class="actions">
                     <button class="action-btn copy-btn" id="copyXmlOutputBtn">复制</button>
                     <button class="action-btn download-btn" id="downloadXmlBtn">下载</button>
@@ -1309,7 +1332,7 @@
         </div>
     </div>
 
-    <div class="postman-container" id="postmanContainer" style="display: none;">
+    <div class="postman-container" id="postmanContainer" style="display: flex;">
         <div class="history-sidebar">
             <div class="history-header">
                 <h2>HISTORY</h2>
@@ -1331,7 +1354,6 @@
         <div class="postman-content">
             <div class="panel">
                 <div class="panel-header">
-                    <h2>请求配置</h2>
                 </div>
                 <div class="panel-content">
                     <div class="request-config">
@@ -1485,10 +1507,10 @@
             
             <div class="panel">
                 <div class="panel-header">
-                    <h2>响应</h2>
+                    <h2 id="responsePanelHeader">响应</h2>
                     <div class="actions">
-                        <button class="action-btn copy-btn" id="copyResponseBtn">复制响应</button>
-                        <button class="action-btn download-btn" id="downloadResponseBtn">下载响应</button>
+                        <button class="action-btn copy-btn" id="copyResponseBtn">Copy Response</button>
+                        <button class="action-btn download-btn" id="downloadResponseBtn">Download Response</button>
                     </div>
                 </div>
                 <div class="panel-content">
