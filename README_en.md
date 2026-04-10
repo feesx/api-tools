@@ -192,9 +192,8 @@ api-tools/
 
 ## Feature Preview
 
-
 #### API Testing Response Display
-![API Testing Response Display](images/api-testing-english.png)
+![API Testing Response Display](images/api-testing-english.svg)
 
 ## License
 

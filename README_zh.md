@@ -192,10 +192,8 @@ api-tools/
 
 ## 功能预览
 
-
-
 #### API测试响应展示
-![API测试响应展示](images/api-testing-chinese.png)
+![API测试响应展示](images/api-testing-chinese.svg)
 
 ## 许可证
 
