@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+        
+        .json-input {
+            width: 100%;
+            padding: 15px;
+            font-family: monospace;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-height: 200px;
+        }
+        
+        .test-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .test-button:hover {
+            background-color: #218838;
+        }
+        
+        .test-button.secondary {
+            background-color: #6c757d;
+        }
+        
+        .test-button.secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .test-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .test-links a:hover {
+            background-color: #2980b9;
+        }
+        
+        .info-box {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON Formatter 插件测试页面</h1>
+    
+    <div class="info-box">
+        <p>这个页面用于测试 Chrome 浏览器的 JSON Formatter 插件功能。</p>
+        <p><strong>使用方法：</strong></p>
+        <ul>
+            <li>确保已安装并启用 JSON Formatter 插件</li>
+            <li>点击下面的链接或按钮来测试各种JSON格式</li>
+            <li>插件应该会自动检测并格式化JSON内容</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试选项</h2>
+        
+        <div class="test-links">
+            <a href="data:application/json;charset=utf-8,%7B%22name%22%3A%22JSON%20Formatter%22%2C%22version%22%3A1.0%2C%22features%22%3A%5B%22formatting%22%2C%22highlighting%22%2C%22validation%22%5D%7D" target="_blank">
+                测试简单JSON
+            </a>
+            
+            <a href="data:application/json;charset=utf-8,%5B%7B%22id%22%3A1%2C%22name%22%3A%22John%20Doe%22%2C%22email%22%3A%22john%40example.com%22%2C%22active%22%3Atrue%2C%22score%22%3A85.5%2C%22tags%22%3A%5B%22admin%22%2C%22user%22%5D%7D%2C%7B%22id%22%3A2%2C%22name%22%3A%22Jane%20Smith%22%2C%22email%22%3A%22jane%40example.com%22%2C%22active%22%3Afalse%2C%22score%22%3A92.0%2C%22tags%22%3A%5B%22user%22%5D%7D%5D" target="_blank">
+                测试复杂JSON
+            </a>
+            
+            <a href="data:application/json;charset=utf-8,%7B%22invalid%22%3Ajson%22data%22%3A123%7D" target="_blank">
+                测试无效JSON
+            </a>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>手动测试工具</h2>
+        
+        <p>输入任意JSON内容并点击格式化按钮：</p>
+        
+        <textarea id="jsonInput" class="json-input">{
+    "name": "JSON Formatter Test",
+    "version": 1.0,
+    "description": "A test page for JSON Formatter Chrome extension",
+    "features": [
+        "Automatic formatting",
+        "Syntax highlighting",
+        "Error validation",
+        "Theme switching"
+    ],
+    "author": {
+        "name": "Test User",
+        "email": "test@example.com",
+        "website": "https://example.com"
+    },
+    "settings": {
+        "indent": 2,
+        "theme": "dark",
+        "automatic": true
+    },
+    "stats": {
+        "downloads": 10000,
+        "rating": 4.8,
+        "reviews": 250
+    }
+}</textarea>
+        
+        <div style="text-align: center;">
+            <button id="formatBtn" class="test-button">格式化JSON</button>
+            <button id="clearBtn" class="test-button secondary">清空</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>插件功能说明</h2>
+        
+        <ul>
+            <li><strong>自动格式化：</strong>当浏览器访问JSON文件或包含JSON数据的页面时，插件会自动检测并格式化</li>
+            <li><strong>语法高亮：</strong>JSON的不同部分会用不同颜色高亮显示（对象、数组、字符串、数字、布尔值、null）</li>
+            <li><strong>错误验证：</strong>无效的JSON会显示详细的错误信息和位置</li>
+            <li><strong>主题切换：</strong>支持深色和浅色主题，可通过右上角按钮切换</li>
+            <li><strong>右键菜单：</strong>在页面上右键点击可选择"格式化JSON"选项</li>
+            <li><strong>复制和下载：</strong>可一键复制格式化后的JSON或下载为文件</li>
+        </ul>
+    </div>
+
+    <script>
+        document.getElementById('formatBtn').addEventListener('click', function() {
+            const jsonInput = document.getElementById('jsonInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const parsedJSON = JSON.parse(jsonInput);
+                const formattedJSON = JSON.stringify(parsedJSON, null, 2);
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = formattedJSON;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `JSON Parse Error: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('result').textContent = '';
+            document.getElementById('result').className = 'result';
+        });
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'Enter':
+                        document.getElementById('formatBtn').click();
+                        break;
+                    case 'Delete':
+                        if (event.shiftKey) {
+                            document.getElementById('clearBtn').click();
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

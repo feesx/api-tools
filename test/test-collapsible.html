@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter 折叠功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2196f3;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .json-sample {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow: auto;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .test-list {
+            margin-left: 20px;
+        }
+        .test-list li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON Formatter 折叠功能测试</h1>
+    
+    <div class="instructions">
+        <h3>测试步骤：</h3>
+        <ol class="test-list">
+            <li>点击浏览器工具栏中的 JSON Formatter 图标</li>
+            <li>复制下面的复杂嵌套JSON示例</li>
+            <li>粘贴到左侧输入框</li>
+            <li>点击"格式化"按钮</li>
+            <li>测试折叠功能：
+                <ul>
+                    <li>点击对象或数组前的 ▶ 图标进行折叠/展开</li>
+                    <li>点击"展开全部"按钮展开所有节点</li>
+                    <li>点击"折叠全部"按钮折叠所有节点</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>复杂嵌套JSON示例（测试折叠功能）</h2>
+        <div class="json-sample" id="complexJson">{
+  "project": {
+    "name": "JSON Formatter",
+    "version": "1.0.0",
+    "description": "一个支持折叠功能的JSON格式化工具",
+    "features": [
+      {
+        "name": "格式化",
+        "enabled": true,
+        "settings": {
+          "indentSize": 2,
+          "sortKeys": false
+        }
+      },
+      {
+        "name": "折叠",
+        "enabled": true,
+        "settings": {
+          "autoCollapse": false,
+          "maxDepth": 5
+        }
+      },
+      {
+        "name": "语法高亮",
+        "enabled": true,
+        "colors": {
+          "key": "#d63384",
+          "string": "#059669",
+          "number": "#d73a49",
+          "boolean": "#005cc5"
+        }
+      }
+    ],
+    "users": [
+      {
+        "id": 1,
+        "name": "张三",
+        "profile": {
+          "age": 28,
+          "city": "北京",
+          "hobbies": ["编程", "阅读", "旅行"],
+          "contact": {
+            "email": "zhangsan@example.com",
+            "phone": "13800138000"
+          }
+        },
+        "posts": [
+          {
+            "id": 101,
+            "title": "第一篇文章",
+            "content": "这是文章内容...",
+            "tags": ["技术", "生活"],
+            "comments": [
+              {
+                "id": 1001,
+                "user": "李四",
+                "text": "很好的文章！"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "李四",
+        "profile": {
+          "age": 32,
+          "city": "上海",
+          "hobbies": ["音乐", "运动"]
+        },
+        "posts": []
+      }
+    ],
+    "settings": {
+      "theme": "light",
+      "language": "zh-CN",
+      "autoSave": true,
+      "notifications": {
+        "enabled": true,
+        "sound": false
+      }
+    },
+    "statistics": {
+      "totalUsers": 1000,
+      "activeUsers": 750,
+      "totalPosts": 5000,
+      "avgPostsPerUser": 5.0,
+      "growth": {
+        "monthly": 15.5,
+        "yearly": 185.2
+      }
+    }
+  },
+  "metadata": {
+    "created": "2024-01-15T10:30:00Z",
+    "updated": "2024-01-20T15:45:00Z",
+    "author": "Developer",
+    "tags": ["json", "formatter", "tool", "chrome-extension"]
+  }
+}</div>
+        <button onclick="copyJSON()">复制复杂JSON</button>
+    </div>
+
+    <div class="test-section">
+        <h2>大型数组测试</h2>
+        <div class="json-sample" id="arrayJson">{
+  "data": {
+    "title": "大型数组测试",
+    "items": [
+      {"id": 1, "name": "项目1", "status": "active"},
+      {"id": 2, "name": "项目2", "status": "completed"},
+      {"id": 3, "name": "项目3", "status": "pending"},
+      {"id": 4, "name": "项目4", "status": "active"},
+      {"id": 5, "name": "项目5", "status": "cancelled"},
+      {"id": 6, "name": "项目6", "status": "active"},
+      {"id": 7, "name": "项目7", "status": "completed"},
+      {"id": 8, "name": "项目8", "status": "pending"},
+      {"id": 9, "name": "项目9", "status": "active"},
+      {"id": 10, "name": "项目10", "status": "completed"}
+    ],
+    "categories": {
+      "active": ["项目1", "项目4", "项目6", "项目9"],
+      "completed": ["项目2", "项目7", "项目10"],
+      "pending": ["项目3", "项目8"],
+      "cancelled": ["项目5"]
+    }
+  }
+}</div>
+        <button onclick="copyArrayJSON()">复制数组JSON</button>
+    </div>
+
+    <script>
+        function copyJSON() {
+            const json = document.getElementById('complexJson').textContent;
+            navigator.clipboard.writeText(json).then(() => {
+                alert('复杂JSON已复制到剪贴板！');
+            });
+        }
+
+        function copyArrayJSON() {
+            const json = document.getElementById('arrayJson').textContent;
+            navigator.clipboard.writeText(json).then(() => {
+                alert('数组JSON已复制到剪贴板！');
+            });
+        }
+    </script>
+</body>
+</html>

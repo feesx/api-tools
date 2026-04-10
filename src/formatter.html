@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #2196f3;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: white;
+        }
+
+        .tab:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .tab.active {
+            background-color: white;
+            color: #2196f3;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            height: calc(100vh - 70px);
+        }
+
+        .panel {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            color: #2196f3;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 1rem;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .line-numbers {
+            background-color: #f8f9fa;
+            padding: 1rem 0.5rem;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #999;
+            user-select: none;
+            min-width: 40px;
+            overflow: hidden;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            line-height: 1.6;
+            outline: none;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .clear-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+        .download-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background-color: #138496;
+            transform: translateY(-1px);
+        }
+
+        .expand-all-btn, .collapse-all-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .expand-all-btn:hover, .collapse-all-btn:hover {
+            background-color: #e0a800;
+            transform: translateY(-1px);
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            display: none;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .output-container {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1rem;
+            height: 100%;
+            overflow: auto;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .collapsed-content {
+            margin-left: 8px;
+        }
+
+        .json-key {
+            color: #d63384;
+            font-weight: 600;
+        }
+
+        .json-string {
+            color: #059669;
+        }
+
+        .json-number {
+            color: #d73a49;
+        }
+
+        .json-boolean {
+            color: #005cc5;
+        }
+
+        .json-null {
+            color: #6f42c1;
+        }
+
+        .json-object, .json-array {
+            color: #005cc5;
+        }
+
+        .json-punctuation {
+            color: #22863a;
+        }
+
+        .xml-tag {
+            color: #005cc5;
+            font-weight: 600;
+        }
+
+        .xml-attribute {
+            color: #d63384;
+        }
+
+        .xml-attribute-value {
+            color: #059669;
+        }
+
+        .xml-comment {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .xml-cdata {
+            color: #17a2b8;
+        }
+
+        .xml-tag {
+            color: #d63384;
+            font-weight: 600;
+        }
+
+        .xml-attribute {
+            color: #6f42c1;
+        }
+
+        .xml-attribute-value {
+            color: #059669;
+        }
+
+        .xml-text {
+            color: #333;
+        }
+
+        /* Postman styles */
+        .request-config {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .request-method, .request-url, .request-headers, .request-body {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .request-method label, .request-url label, .request-headers label, .request-body label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        #requestMethod {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        #requestUrl {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        #requestHeaders, #requestBody {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        .response-info {
+            display: flex;
+            gap: 20px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .response-status, .response-time, .response-size {
+            font-weight: 500;
+        }
+
+        .response-status span {
+            font-weight: 600;
+        }
+
+        .response-time span {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .response-size span {
+            font-weight: 600;
+            color: #17a2b8;
+        }
+
+        /* Postman additional styles */
+        .body-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .body-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .small-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .body-type {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .body-type label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .body-type select {
+            padding: 4px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .file-upload {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-upload label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .history-section {
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            background-color: #f8f9fa;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+            color: #495057;
+        }
+
+
+
+        .history-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-item-method {
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .history-item-url {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .history-item-time {
+            font-size: 10px;
+            color: #adb5bd;
+            margin-top: 4px;
+        }
+
+        .empty-history {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        /* Postman container layout */
+        .postman-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+
+        .history-sidebar {
+            width: 300px;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #4a5568;
+            height: 100%;
+            position: relative;
+        }
+
+        .history-sidebar .history-header {
+            padding: 16px;
+            border-bottom: 1px solid #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .history-sidebar .history-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            color: #e2e8f0;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .history-sidebar .small-btn {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border: 1px solid #718096;
+        }
+
+        .history-sidebar .small-btn:hover {
+            background-color: #718096;
+        }
+
+        .search-box {
+            padding: 12px 16px;
+            border-bottom: 1px solid #4a5568;
+            flex-shrink: 0;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder {
+            color: #718096;
+        }
+
+        .history-group {
+            margin-bottom: 16px;
+        }
+
+        .history-group-header {
+            padding: 8px 16px;
+            background-color: #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .history-group-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+            color: #e2e8f0;
+        }
+
+        .history-group-count {
+            font-size: 12px;
+            color: #718096;
+            background-color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .history-group-items {
+            padding-left: 16px;
+            border-left: 2px solid #4a5568;
+        }
+
+        .history-sidebar .history-list {
+            flex: 1;
+            overflow-y: scroll;
+            background-color: #1a202c;
+            border: none;
+            min-height: 0;
+        }
+
+        /* 自定义滚动条样式 */
+        .history-sidebar .history-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-sidebar .history-list::-webkit-scrollbar-track {
+            background: #1a202c;
+        }
+
+        .history-sidebar .history-list::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+
+        .history-sidebar .history-list::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        .history-sidebar .history-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #2d3748;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .history-sidebar .history-item:hover {
+            background-color: #2d3748;
+        }
+
+        .history-sidebar .history-item-method {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .history-sidebar .history-item-method.GET {
+            background-color: #3182ce;
+            color: white;
+        }
+
+        .history-sidebar .history-item-method.POST {
+            background-color: #38a169;
+            color: white;
+        }
+
+        .history-sidebar .history-item-method.PUT {
+            background-color: #ed8936;
+            color: white;
+        }
+
+        .history-sidebar .history-item-method.DELETE {
+            background-color: #e53e3e;
+            color: white;
+        }
+
+        .history-sidebar .history-item-method.PATCH {
+            background-color: #805ad5;
+            color: white;
+        }
+
+        .history-sidebar .history-item-url {
+            font-size: 13px;
+            color: #e2e8f0;
+            word-break: break-all;
+        }
+
+        .history-sidebar .history-item-time {
+            font-size: 11px;
+            color: #718096;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-sidebar .history-item-status {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .history-sidebar .history-item-status.success {
+            color: #38a169;
+        }
+
+        .history-sidebar .history-item-status.error {
+            color: #e53e3e;
+        }
+
+        .postman-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .postman-content .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .postman-content .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .postman-content .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .postman-content .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .postman-content .panel-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Postman request header */
+        .request-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .method-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+            min-width: 100px;
+        }
+
+        .url-input {
+            flex: 1;
+        }
+
+        .url-input input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        .send-btn {
+            padding: 8px 24px;
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .send-btn:hover {
+            background-color: #2c5282;
+        }
+
+        /* Request tabs */
+        .request-tabs {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            color: #3182ce;
+        }
+
+        .tab-button.active {
+            color: #3182ce;
+            border-bottom-color: #3182ce;
+        }
+
+        /* Tab panes */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Parameters */
+        .params-container,
+        .headers-container,
+        .form-data-container,
+        .url-encoded-container {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+        }
+
+        .param-header,
+        .header-header,
+        .form-data-header,
+        .url-encoded-header {
+            display: flex;
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .param-header span,
+        .header-header span,
+        .form-data-header span,
+        .url-encoded-header span {
+            flex: 1;
+        }
+
+        .param-header span:last-child,
+        .header-header span:last-child,
+        .form-data-header span:last-child,
+        .url-encoded-header span:last-child {
+            flex: 0 0 60px;
+            text-align: center;
+        }
+
+        .param-list,
+        .header-list,
+        .form-data-list,
+        .url-encoded-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .param-item,
+        .header-item,
+        .form-data-item,
+        .url-encoded-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .param-item input,
+        .header-item input,
+        .form-data-item input,
+        .url-encoded-item input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        .form-data-item select {
+            flex: 0 0 100px;
+            padding: 6px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        .remove-param,
+        .remove-header,
+        .remove-form-data,
+        .remove-url-encoded {
+            flex: 0 0 30px;
+            height: 30px;
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-param:hover,
+        .remove-header:hover,
+        .remove-form-data:hover,
+        .remove-url-encoded:hover {
+            background-color: #c53030;
+        }
+
+        .add-param-btn,
+        .add-header-btn,
+        .add-form-data-btn,
+        .add-url-encoded-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 1px dashed #ced4da;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            font-size: 14px;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .add-param-btn:hover,
+        .add-header-btn:hover,
+        .add-form-data-btn:hover,
+        .add-url-encoded-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Body */
+        .body-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        .body-type-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .body-type-btn {
+            padding: 6px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .body-type-btn.active {
+            background-color: #3182ce;
+            color: white;
+            border-color: #3182ce;
+        }
+
+        .body-content {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+        }
+
+        .body-pane {
+            display: none;
+            padding: 12px;
+        }
+
+        .body-pane.active {
+            display: block;
+        }
+
+        #raw-body textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .file-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-container label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        /* Response */
+        .response-container {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .response-tabs {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .response-tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 12px;
+            font-weight: 500;
+            color: #495057;
+            cursor: pointer;
+        }
+
+        .response-tab.active {
+            color: #3182ce;
+            border-bottom-color: #3182ce;
+        }
+
+        .response-content {
+            padding: 16px;
+        }
+
+        .response-status {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .response-status.success {
+            color: #38a169;
+        }
+
+        .response-status.error {
+            color: #e53e3e;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+            padding: 2px 4px 2px 10px;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .collapsible:hover {
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+
+        .toggle-icon {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 4px;
+            margin-left: -10px;
+            font-size: 8px;
+            color: #666;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .collapsed-summary {
+            color: #999;
+            font-style: italic;
+            font-size: 12px;
+            margin-left: 8px;
+            display: none;
+        }
+
+        .collapsed-content {
+            display: block;
+            margin-left: 8px;
+        }
+
+        .stats {
+            padding: 0.75rem 1rem;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #1976d2;
+            margin-top: 0.5rem;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .panel {
+                min-height: 400px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>API Tools</h1>
+        <div class="tabs">
+            <button class="tab active" data-tab="postman">Postman</button>
+            <button class="tab" data-tab="json">JSON</button>
+            <button class="tab" data-tab="xml">XML</button>
+        </div>
+    </div>
+
+    <div class="main-container" id="jsonContainer">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>输入</h2>
+                <div class="actions">
+                    <button class="action-btn copy-btn" id="copyInputBtn">复制</button>
+                    <button class="action-btn clear-btn" id="clearInputBtn">清空</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="editor-container">
+                    <div class="line-numbers" id="lineNumbers">1</div>
+                    <div class="editor-wrapper">
+                        <textarea id="jsonInput" placeholder="在此粘贴JSON字符串...">{
+  "name": "JSON Formatter",
+  "version": "1.0.0",
+  "description": "一个支持折叠功能的JSON格式化工具",
+  "features": [
+    "格式化JSON",
+    "语法高亮",
+    "错误验证",
+    "复制功能",
+    "下载功能",
+    "折叠展开"
+  ],
+  "settings": {
+    "theme": "light",
+    "indentSize": 2,
+    "autoFormat": true,
+    "autoCollapse": false
+  },
+  "stats": {
+    "totalUsers": 1000,
+    "activeUsers": 750,
+    "satisfaction": 4.8
+  },
+  "sampleData": {
+    "users": [1, 2, 3, 4, 5],
+    "config": {
+      "enabled": true,
+      "options": {
+        "debug": false,
+        "verbose": true
+      }
+    }
+  }
+}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>格式化结果</h2>
+                <div class="actions">
+                    <button class="action-btn expand-all-btn" id="expandAllBtn">展开全部</button>
+                    <button class="action-btn collapse-all-btn" id="collapseAllBtn">折叠全部</button>
+                    <button class="action-btn copy-btn" id="copyOutputBtn">复制</button>
+                    <button class="action-btn download-btn" id="downloadBtn">下载</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="message" class="message"></div>
+                <div class="output-container" id="outputContainer">
+                    <div class="empty-state" id="emptyState">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/>
+                        </svg>
+                        <p>格式化后的内容将显示在这里</p>
+                    </div>
+                    <pre id="jsonOutput" style="display: none;"></pre>
+                </div>
+                <div class="stats" id="stats" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container" id="xmlContainer" style="display: none;">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>输入</h2>
+                <div class="actions">
+                    <button class="action-btn copy-btn" id="copyXmlInputBtn">复制</button>
+                    <button class="action-btn clear-btn" id="clearXmlInputBtn">清空</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="editor-container">
+                    <div class="line-numbers" id="xmlLineNumbers">1</div>
+                    <div class="editor-wrapper">
+                        <textarea id="xmlInput" placeholder="在此粘贴XML字符串..."><?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <name>XML Formatter</name>
+  <version>1.0.0</version>
+  <description>一个支持格式化的XML工具</description>
+  <features>
+    <feature>格式化XML</feature>
+    <feature>语法高亮</feature>
+    <feature>错误验证</feature>
+    <feature>复制功能</feature>
+  </features>
+  <settings>
+    <theme>light</theme>
+    <indentSize>2</indentSize>
+  </settings>
+  <stats>
+    <totalUsers>1000</totalUsers>
+    <activeUsers>750</activeUsers>
+    <satisfaction>4.8</satisfaction>
+  </stats>
+</root></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>格式化结果</h2>
+                <div class="actions">
+                    <button class="action-btn copy-btn" id="copyXmlOutputBtn">复制</button>
+                    <button class="action-btn download-btn" id="downloadXmlBtn">下载</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="xmlMessage" class="message"></div>
+                <div class="output-container" id="xmlOutputContainer">
+                    <div class="empty-state" id="xmlEmptyState">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/>
+                        </svg>
+                        <p>格式化后的内容将显示在这里</p>
+                    </div>
+                    <pre id="xmlOutput" style="display: none;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="postman-container" id="postmanContainer" style="display: none;">
+        <div class="history-sidebar">
+            <div class="history-header">
+                <h2>HISTORY</h2>
+                <div class="history-actions">
+                    <button class="small-btn" id="importHistoryBtn">导入</button>
+                    <button class="small-btn" id="exportHistoryBtn">导出</button>
+                    <button class="small-btn" id="clearHistoryBtn">清空历史</button>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="historySearch" placeholder="Search">
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="empty-history">
+                    <p>暂无请求历史</p>
+                </div>
+            </div>
+        </div>
+        <div class="postman-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>请求配置</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="request-config">
+                    <div class="request-header">
+                        <div class="method-selector">
+                            <select id="requestMethod">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="PATCH">PATCH</option>
+                            </select>
+                        </div>
+                        <div class="url-input">
+                            <input type="text" id="requestUrl" placeholder="https://api.example.com" value="http://localhost:8082">
+                        </div>
+                        <div class="send-button">
+                            <button class="action-btn send-btn" id="sendRequestBtn">Send</button>
+                        </div>
+                    </div>
+                    
+                    <div class="request-tabs">
+                        <button class="tab-button active" data-tab="params">QUERY PARAMETERS</button>
+                        <button class="tab-button" data-tab="headers">HEADERS</button>
+                        <button class="tab-button" data-tab="body">BODY</button>
+                    </div>
+                    
+                    <div class="request-tab-content">
+                        <div class="tab-pane active" id="params-tab">
+                            <div class="params-container">
+                                <div class="param-header">
+                                    <span>KEY</span>
+                                    <span>VALUE</span>
+                                    <span>DESCRIPTION</span>
+                                    <span>ACTION</span>
+                                </div>
+                                <div class="param-list" id="paramList">
+                                    <div class="param-item">
+                                        <input type="text" placeholder="Key">
+                                        <input type="text" placeholder="Value">
+                                        <input type="text" placeholder="Description">
+                                        <button class="remove-param">×</button>
+                                    </div>
+                                </div>
+                                <button class="add-param-btn" id="addParamBtn">Add Parameter</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="headers-tab">
+                            <div class="headers-container">
+                                <div class="header-header">
+                                    <span>KEY</span>
+                                    <span>VALUE</span>
+                                    <span>ACTION</span>
+                                </div>
+                                <div class="header-list" id="headerList">
+                                    <div class="header-item">
+                                        <input type="text" value="Content-Type">
+                                        <input type="text" value="application/json">
+                                        <button class="remove-header">×</button>
+                                    </div>
+                                    <div class="header-item">
+                                        <input type="text" value="userToken">
+                                        <input type="text" value="1">
+                                        <button class="remove-header">×</button>
+                                    </div>
+                                </div>
+                                <button class="add-header-btn" id="addHeaderBtn">Add Header</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="body-tab">
+                            <div class="body-header">
+                                <div class="body-type-selector">
+                                    <button class="body-type-btn active" data-type="raw">Raw</button>
+                                    <button class="body-type-btn" data-type="form-data">Form-Data</button>
+                                    <button class="body-type-btn" data-type="x-www-form-urlencoded">x-www-form-urlencoded</button>
+                                    <button class="body-type-btn" data-type="file">File</button>
+                                </div>
+                                <div class="body-actions">
+                                    <button class="small-btn" id="formatBodyBtn">格式化</button>
+                                    <button class="small-btn" id="clearBodyBtn">清空</button>
+                                </div>
+                            </div>
+                            
+                            <div class="body-content">
+                                <div class="body-pane active" id="raw-body">
+                                    <div class="body-type">
+                                        <label>Format:</label>
+                                        <select id="rawFormat">
+                                            <option value="json" selected>JSON</option>
+                                            <option value="xml">XML</option>
+                                            <option value="text">Text</option>
+                                        </select>
+                                    </div>
+                                    <textarea id="requestBody" placeholder='{"key": "value"}'>{"title": "foo", "body": "bar", "userId": 1}</textarea>
+                                </div>
+                                
+                                <div class="body-pane" id="form-data-body">
+                                    <div class="form-data-container">
+                                        <div class="form-data-header">
+                                            <span>KEY</span>
+                                            <span>VALUE</span>
+                                            <span>TYPE</span>
+                                            <span>ACTION</span>
+                                        </div>
+                                        <div class="form-data-list" id="formDataList">
+                                            <div class="form-data-item">
+                                                <input type="text" placeholder="Key">
+                                                <input type="text" placeholder="Value">
+                                                <select class="form-data-type">
+                                                    <option value="text">Text</option>
+                                                    <option value="file">File</option>
+                                                </select>
+                                                <button class="remove-form-data">×</button>
+                                            </div>
+                                        </div>
+                                        <button class="add-form-data-btn" id="addFormDataBtn">Add Form Data</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="body-pane" id="x-www-form-urlencoded-body">
+                                    <div class="url-encoded-container">
+                                        <div class="url-encoded-header">
+                                            <span>KEY</span>
+                                            <span>VALUE</span>
+                                            <span>ACTION</span>
+                                        </div>
+                                        <div class="url-encoded-list" id="urlEncodedList">
+                                            <div class="url-encoded-item">
+                                                <input type="text" placeholder="Key">
+                                                <input type="text" placeholder="Value">
+                                                <button class="remove-url-encoded">×</button>
+                                            </div>
+                                        </div>
+                                        <button class="add-url-encoded-btn" id="addUrlEncodedBtn">Add Parameter</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="body-pane" id="file-body">
+                                    <div class="file-container">
+                                        <label>File:</label>
+                                        <input type="file" id="fileInput">
+                                        <div class="file-info" id="fileInfo">No file selected</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>响应</h2>
+                    <div class="actions">
+                        <button class="action-btn copy-btn" id="copyResponseBtn">复制响应</button>
+                        <button class="action-btn download-btn" id="downloadResponseBtn">下载响应</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="responseMessage" class="message"></div>
+                    <div class="output-container" id="responseContainer">
+                        <div class="empty-state" id="responseEmptyState">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/>
+                            </svg>
+                            <p>响应结果将显示在这里</p>
+                        </div>
+                        <div class="response-info" id="responseInfo" style="display: none;">
+                            <div class="response-status">状态: <span id="responseStatus"></span></div>
+                            <div class="response-time">耗时: <span id="responseTime"></span>ms</div>
+                            <div class="response-size">大小: <span id="responseSize"></span> bytes</div>
+                        </div>
+                        <pre id="responseOutput" style="display: none;"></pre>
+                    </div>
+                </div>
+            </div>
+
+
+    <script src="formatter.js"></script>
+</body>
+</html>

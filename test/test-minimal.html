@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter Minimal Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        .json-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .test-instructions {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .test-link {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 5px;
+        }
+        .test-link:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON Formatter Plugin Minimal Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Auto Format</h2>
+        <div class="test-instructions">
+            Click the link below. The plugin should automatically format the JSON data.
+        </div>
+        <a href="data:application/json;charset=utf-8,%7B%22name%22%3A%22%E5%BC%A0%E4%B8%89%22%2C%22age%22%3A30%2C%22email%22%3A%22zhangsan%40example.com%22%2C%22isStudent%22%3Afalse%2C%22score%22%3A85.5%7D" class="test-link" target="_blank">
+            Open JSON Data
+        </a>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Right-click Format</h2>
+        <div class="test-instructions">
+            Right-click on the JSON text below and select "Format JSON".
+        </div>
+        <div class="json-content">
+{"name":"张三","age":30,"email":"zhangsan@example.com","isStudent":false,"score":85.5}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Verification Steps</h2>
+        <ol>
+            <li>Check if the plugin icon is visible in Chrome toolbar</li>
+            <li>Click the plugin icon to see if it formats the page</li>
+            <li>Test the right-click menu option</li>
+            <li>Test auto-format on data URLs</li>
+            <li>Verify syntax highlighting and theme switching</li>
+        </ol>
+    </div>
+</body>
+</html>

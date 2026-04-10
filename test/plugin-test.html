@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter Plugin Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        .test-json {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #e9ecef;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .test-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background-color: #218838;
+        }
+        .test-button.secondary {
+            background-color: #6c757d;
+        }
+        .test-button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info-box {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .test-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .test-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .test-links a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON Formatter 插件功能测试</h1>
+    
+    <div class="info-box">
+        <p><strong>测试说明：</strong>此页面包含各种JSON格式的测试数据，用于验证Chrome插件的功能是否正常工作。</p>
+        <p><strong>测试步骤：</strong></p>
+        <ul>
+            <li>确保Chrome浏览器已加载插件</li>
+            <li>使用浏览器右键菜单或插件图标测试格式化功能</li>
+            <li>验证插件是否能正确格式化不同类型的JSON数据</li>
+            <li>测试插件在无效JSON情况下的错误处理</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试类型 1 - 简单JSON对象</h2>
+        <div class="test-json">
+{
+    "name": "张三",
+    "age": 30,
+    "email": "zhangsan@example.com",
+    "isStudent": false,
+    "score": 85.5
+}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试类型 2 - JSON数组</h2>
+        <div class="test-json">
+[
+    {
+        "id": 1,
+        "name": "张三",
+        "age": 30,
+        "email": "zhangsan@example.com"
+    },
+    {
+        "id": 2,
+        "name": "李四",
+        "age": 25,
+        "email": "lisi@example.com"
+    },
+    {
+        "id": 3,
+        "name": "王五",
+        "age": 35,
+        "email": "wangwu@example.com"
+    }
+]
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试类型 3 - 嵌套JSON结构</h2>
+        <div class="test-json">
+{
+    "company": "Tech Corp",
+    "address": {
+        "street": "123 Main St",
+        "city": "Beijing",
+        "country": "China"
+    },
+    "employees": [
+        {
+            "name": "张三",
+            "role": "Developer",
+            "skills": ["JavaScript", "Python", "React"]
+        },
+        {
+            "name": "李四",
+            "role": "Designer",
+            "skills": ["Photoshop", "Sketch", "Illustrator"]
+        }
+    ],
+    "projects": [
+        {
+            "name": "Project X",
+            "status": "active",
+            "budget": 100000
+        },
+        {
+            "name": "Project Y",
+            "status": "completed",
+            "budget": 50000
+        }
+    ]
+}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试类型 4 - 特殊字符</h2>
+        <div class="test-json">
+{
+    "message": "测试包含\n换行符\n的字符串",
+    "url": "https://example.com/path/to/resource?param1=value1&param2=value2",
+    "html": "<div class=\"container\">\n    <h1>标题</h1>\n    <p>内容</p>\n</div>"
+}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试类型 5 - 无效JSON</h2>
+        <div class="test-json">
+{
+    "name": "张三",
+    "age": 30,
+    "email": "zhangsan@example.com"
+    "isStudent": false  // 这里缺少逗号
+}
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试工具</h2>
+        <p>使用以下链接测试插件的自动格式化功能：</p>
+        <div class="test-links">
+            <a href="data:application/json;charset=utf-8,%7B%22name%22%3A%22%E5%BC%A0%E4%B8%89%22%2C%22age%22%3A30%2C%22email%22%3A%22zhangsan%40example.com%22%2C%22isStudent%22%3Afalse%2C%22score%22%3A85.5%7D" target="_blank">
+                打开简单JSON
+            </a>
+            <a href="data:application/json;charset=utf-8,%5B%7B%22id%22%3A1%2C%22name%22%3A%22%E5%BC%A0%E4%B8%89%22%2C%22age%22%3A30%2C%22email%22%3A%22zhangsan%40example.com%22%7D%2C%7B%22id%22%3A2%2C%22name%22%3A%22%E6%9D%8E%E5%9B%9B%22%2C%22age%22%3A25%2C%22email%22%3A%22lisi%40example.com%22%7D%2C%7B%22id%22%3A3%2C%22name%22%3A%22%E7%8E%8B%E4%BA%94%22%2C%22age%22%3A35%2C%22email%22%3A%22wangwu%40example.com%22%7D%5D" target="_blank">
+                打开JSON数组
+            </a>
+            <a href="data:application/json;charset=utf-8,%7B%22name%22%3A%22%E5%BC%A0%E4%B8%89%22%2C%22age%22%3A30%2C%22email%22%3A%22zhangsan%40example.com%22%22isStudent%22%3Afalse%7D" target="_blank">
+                打开无效JSON
+            </a>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>手动格式化测试</h2>
+        <p>在浏览器中右键点击以下文本，选择"格式化为JSON"测试插件功能：</p>
+        <div class="test-json">
+{"name":"张三","age":30,"email":"zhangsan@example.com","isStudent":false,"score":85.5}
+        </div>
+    </div>
+    
+    <script>
+        // 简单的JavaScript格式化函数（用于对照测试）
+        function formatJSON(jsonString) {
+            try {
+                const obj = JSON.parse(jsonString);
+                return JSON.stringify(obj, null, 2);
+            } catch (e) {
+                return "Error: " + e.message;
+            }
+        }
+        
+        // 页面内格式化函数
+        document.getElementById('pageFormatBtn')?.addEventListener('click', function() {
+            const jsonString = '{"name":"张三","age":30,"email":"zhangsan@example.com","isStudent":false,"score":85.5}';
+            const formatted = formatJSON(jsonString);
+            document.getElementById('result').innerHTML = `<pre>${formatted}</pre>`;
+            document.getElementById('result').className = 'result ' + (formatted.startsWith('Error') ? 'error' : 'success');
+        });
+    </script>
+</body>
+</html>
