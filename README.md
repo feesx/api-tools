@@ -192,21 +192,16 @@ api-tools/
 - **popup.js** - 弹出窗口脚本，提供简单的JSON格式化
 - **manifest.json** - 插件配置
 
-## 未来规划
+### 功能预览
 
-### 待实现功能
-- [ ] 快捷键支持
-- [ ] 主题设置（深色/浅色）
-- [ ] JSON美化选项（缩进大小等）
-- [ ] JSON压缩功能
-- [ ] 在线验证工具
-- [ ] 支持其他数据格式（YAML等）
+#### Postman API测试功能
+![Postman API测试功能](images/postman.svg)
 
-### 优化计划
-- [ ] 性能优化
-- [ ] 内存使用优化
-- [ ] 错误处理增强
-- [ ] 测试覆盖率提升
+#### JSON格式化功能
+![JSON格式化功能](images/json.svg)
+
+#### XML格式化功能
+![XML格式化功能](images/xml.svg)
 
 ## 许可证
 
@@ -402,21 +397,16 @@ api-tools/
 - **popup.js** - Popup window script, providing simple JSON formatting
 - **manifest.json** - Extension configuration
 
-## Future Plans
+### Feature Preview
 
-### Features to Implement
-- [ ] Keyboard shortcut support
-- [ ] Theme settings (dark/light)
-- [ ] JSON beautification options (indent size, etc.)
-- [ ] JSON compression functionality
-- [ ] Online validation tools
-- [ ] Support for other data formats (YAML, etc.)
+#### Postman API Testing Feature
+![Postman API Testing Feature](images/postman.svg)
 
-### Optimization Plans
-- [ ] Performance optimization
-- [ ] Memory usage optimization
-- [ ] Enhanced error handling
-- [ ] Improved test coverage
+#### JSON Formatting Feature
+![JSON Formatting Feature](images/json.svg)
+
+#### XML Formatting Feature
+![XML Formatting Feature](images/xml.svg)
 
 ## License
 

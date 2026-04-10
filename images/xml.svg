@@ -1,0 +1,78 @@
+<svg width="800" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="800" height="450" fill="#f5f5f5"/>
+  
+  <!-- 标题栏 -->
+  <rect width="800" height="50" fill="#2196f3"/>
+  <text x="20" y="35" fill="white" font-size="20" font-family="Arial">API Tools - XML Formatter</text>
+  
+  <!-- 左侧输入区域 -->
+  <rect x="20" y="80" width="370" height="320" fill="white" rx="4" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="40" y="100" fill="#333" font-size="14" font-family="Arial">输入</text>
+  
+  <!-- 输入内容 -->
+  <rect x="40" y="120" width="330" height="260" fill="#f5f5f5" rx="4"/>
+  <text x="60" y="145" fill="#333" font-size="12" font-family="Arial">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</text>
+  <text x="60" y="165" fill="#333" font-size="12" font-family="Arial">&lt;root&gt;</text>
+  <text x="80" y="185" fill="#333" font-size="12" font-family="Arial">&lt;name&gt;XML Formatter&lt;/name&gt;</text>
+  <text x="80" y="205" fill="#333" font-size="12" font-family="Arial">&lt;version&gt;1.0.0&lt;/version&gt;</text>
+  <text x="80" y="225" fill="#333" font-size="12" font-family="Arial">&lt;description&gt;一个格式化XML的工具&lt;/description&gt;</text>
+  <text x="80" y="245" fill="#333" font-size="12" font-family="Arial">&lt;features&gt;</text>
+  <text x="100" y="265" fill="#333" font-size="12" font-family="Arial">&lt;feature&gt;格式化XML&lt;/feature&gt;</text>
+  <text x="100" y="285" fill="#333" font-size="12" font-family="Arial">&lt;feature&gt;语法高亮&lt;/feature&gt;</text>
+  <text x="100" y="305" fill="#333" font-size="12" font-family="Arial">&lt;feature&gt;错误验证&lt;/feature&gt;</text>
+  <text x="100" y="325" fill="#333" font-size="12" font-family="Arial">&lt;feature&gt;复制功能&lt;/feature&gt;</text>
+  <text x="100" y="345" fill="#333" font-size="12" font-family="Arial">&lt;feature&gt;下载功能&lt;/feature&gt;</text>
+  <text x="80" y="365" fill="#333" font-size="12" font-family="Arial">&lt;/features&gt;</text>
+  <text x="60" y="385" fill="#333" font-size="12" font-family="Arial">&lt;/root&gt;</text>
+  
+  <!-- 操作按钮 -->
+  <rect x="40" y="410" width="80" height="25" fill="#4caf50" rx="4"/>
+  <text x="80" y="428" fill="white" font-size="12" font-family="Arial" text-anchor="middle">格式化</text>
+  
+  <rect x="130" y="410" width="80" height="25" fill="#f44336" rx="4"/>
+  <text x="170" y="428" fill="white" font-size="12" font-family="Arial" text-anchor="middle">清空</text>
+  
+  <!-- 右侧输出区域 -->
+  <rect x="410" y="80" width="370" height="320" fill="white" rx="4" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="430" y="100" fill="#333" font-size="14" font-family="Arial">格式化结果</text>
+  
+  <!-- 输出内容 -->
+  <rect x="430" y="120" width="330" height="260" fill="#f5f5f5" rx="4"/>
+  <text x="450" y="145" fill="#333" font-size="12" font-family="Arial">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</text>
+  <text x="450" y="165" fill="#333" font-size="12" font-family="Arial">&lt;root&gt;</text>
+  <text x="470" y="185" fill="#9c27b0" font-size="12" font-family="Arial">&lt;name&gt;</text>
+  <text x="520" y="185" fill="#4caf50" font-size="12" font-family="Arial">XML Formatter</text>
+  <text x="600" y="185" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/name&gt;</text>
+  <text x="470" y="205" fill="#9c27b0" font-size="12" font-family="Arial">&lt;version&gt;</text>
+  <text x="530" y="205" fill="#4caf50" font-size="12" font-family="Arial">1.0.0</text>
+  <text x="570" y="205" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/version&gt;</text>
+  <text x="470" y="225" fill="#9c27b0" font-size="12" font-family="Arial">&lt;description&gt;</text>
+  <text x="540" y="225" fill="#4caf50" font-size="12" font-family="Arial">一个格式化XML的工具</text>
+  <text x="630" y="225" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/description&gt;</text>
+  <text x="470" y="245" fill="#9c27b0" font-size="12" font-family="Arial">&lt;features&gt;</text>
+  <text x="490" y="265" fill="#9c27b0" font-size="12" font-family="Arial">&lt;feature&gt;</text>
+  <text x="540" y="265" fill="#4caf50" font-size="12" font-family="Arial">格式化XML</text>
+  <text x="600" y="265" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/feature&gt;</text>
+  <text x="490" y="285" fill="#9c27b0" font-size="12" font-family="Arial">&lt;feature&gt;</text>
+  <text x="540" y="285" fill="#4caf50" font-size="12" font-family="Arial">语法高亮</text>
+  <text x="600" y="285" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/feature&gt;</text>
+  <text x="490" y="305" fill="#9c27b0" font-size="12" font-family="Arial">&lt;feature&gt;</text>
+  <text x="540" y="305" fill="#4caf50" font-size="12" font-family="Arial">错误验证</text>
+  <text x="600" y="305" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/feature&gt;</text>
+  <text x="490" y="325" fill="#9c27b0" font-size="12" font-family="Arial">&lt;feature&gt;</text>
+  <text x="540" y="325" fill="#4caf50" font-size="12" font-family="Arial">复制功能</text>
+  <text x="600" y="325" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/feature&gt;</text>
+  <text x="490" y="345" fill="#9c27b0" font-size="12" font-family="Arial">&lt;feature&gt;</text>
+  <text x="540" y="345" fill="#4caf50" font-size="12" font-family="Arial">下载功能</text>
+  <text x="600" y="345" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/feature&gt;</text>
+  <text x="470" y="365" fill="#9c27b0" font-size="12" font-family="Arial">&lt;/features&gt;</text>
+  <text x="450" y="385" fill="#333" font-size="12" font-family="Arial">&lt;/root&gt;</text>
+  
+  <!-- 操作按钮 -->
+  <rect x="610" y="410" width="80" height="25" fill="#2196f3" rx="4"/>
+  <text x="650" y="428" fill="white" font-size="12" font-family="Arial" text-anchor="middle">复制</text>
+  
+  <rect x="700" y="410" width="80" height="25" fill="#9c27b0" rx="4"/>
+  <text x="740" y="428" fill="white" font-size="12" font-family="Arial" text-anchor="middle">下载</text>
+</svg>
