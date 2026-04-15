@@ -11,10 +11,14 @@
             box-sizing: border-box;
         }
 
-        body {
+        html, body {
+            height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
             color: #333;
+        }
+
+        body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -65,13 +69,11 @@
         .main-container {
             flex: 1;
             display: flex;
-            padding: 1.5rem;
             gap: 1.5rem;
-            height: calc(100vh - 70px);
+            min-height: 0;
         }
 
         .panel {
-            flex: 1;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -99,6 +101,7 @@
             overflow: auto;
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
 
         .editor-container {
@@ -223,8 +226,9 @@
             border: 1px solid #e0e0e0;
             border-radius: 4px;
             padding: 1rem;
-            height: 100%;
-            overflow: auto;
+            overflow: visible;
+            flex: 1;
+            min-height: 200px;
         }
 
         pre {
@@ -234,6 +238,19 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.6;
+            color: #333;
+            min-height: 150px;
+            max-height: none;
+            overflow: visible;
+        }
+
+        /* 响应容器 - 不使用内部滚动，使用外部滚动条 */
+        .response-container {
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            overflow: visible;
+            flex: 1;
+            min-height: 0;
         }
 
         .collapsed-content {
@@ -313,6 +330,8 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            flex-shrink: 0;
+            overflow: visible;
         }
 
         .request-method, .request-url, .request-headers, .request-body {
@@ -518,8 +537,12 @@
         /* Postman container layout */
         .postman-container {
             display: flex;
-            height: calc(100vh - 60px);
+            flex: 1;
+            height: calc(100vh - 70px);
             width: 100%;
+            padding: 0;
+            margin: 0;
+            min-height: 0;
         }
 
         .history-sidebar {
@@ -531,6 +554,7 @@
             border-right: 1px solid #4a5568;
             height: 100%;
             position: relative;
+            flex-shrink: 0;
         }
 
         .history-sidebar .history-header {
@@ -722,9 +746,10 @@
         .postman-content {
             flex: 1;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             overflow: hidden;
             height: 100%;
+            min-height: 0;
         }
 
         .postman-content .panel {
@@ -732,29 +757,34 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
-        }
-
-        .postman-content .panel-content {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        .postman-content .main-container {
-            display: flex;
-            flex: 1;
             overflow: hidden;
+            border-radius: 0;
+            box-shadow: none;
         }
 
-        .postman-content .panel {
+        .postman-content .request-panel {
+            border-right: 2px solid #e0e0e0;
+            background-color: #fafafa;
+        }
+
+        .postman-content .request-panel .panel-content {
             flex: 1;
+            overflow: auto;
+            min-height: 0;
+            padding: 1.5rem;
+        }
+
+        .postman-content .response-panel {
+            background-color: #ffffff;
+        }
+
+        .postman-content .response-panel .panel-content {
+            flex: 1;
+            overflow: auto;
             display: flex;
             flex-direction: column;
-        }
-
-        .postman-content .panel-content {
-            flex: 1;
-            overflow-y: auto;
+            min-height: 0;
+            padding: 1.5rem;
         }
 
         /* Postman request header */
@@ -998,6 +1028,8 @@
         .body-content {
             border: 1px solid #e9ecef;
             border-radius: 4px;
+            max-height: 500px;
+            overflow: auto;
         }
 
         .body-pane {
@@ -1011,7 +1043,8 @@
 
         #raw-body textarea {
             width: 100%;
-            min-height: 300px;
+            min-height: 200px;
+            max-height: 400px;
             padding: 12px;
             border: 1px solid #ced4da;
             border-radius: 4px;
@@ -1040,10 +1073,21 @@
         }
 
         /* Response */
-        .response-container {
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
+        .response-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: auto;
+            overflow: visible;
+        }
+
+        .response-panel .panel-content {
+            flex: 1;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            min-height: auto;
+            padding: 1rem;
         }
 
         .response-tabs {
@@ -1179,7 +1223,7 @@
         <h1>API Tools</h1>
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div class="tabs">
-                <button class="tab active" data-tab="postman">Postman</button>
+                <button class="tab active" data-tab="postman">API测试</button>
                 <button class="tab" data-tab="json">JSON</button>
                 <button class="tab" data-tab="xml">XML</button>
             </div>
@@ -1352,171 +1396,174 @@
             </div>
         </div>
         <div class="postman-content">
-            <div class="panel">
+            <div class="panel request-panel">
                 <div class="panel-header">
+                    <h2>请求</h2>
                 </div>
                 <div class="panel-content">
                     <div class="request-config">
-                    <div class="request-header">
-                        <div class="method-selector">
-                            <select id="requestMethod">
-                                <option value="GET">GET</option>
-                                <option value="POST">POST</option>
-                                <option value="PUT">PUT</option>
-                                <option value="DELETE">DELETE</option>
-                                <option value="PATCH">PATCH</option>
-                            </select>
-                        </div>
-                        <div class="url-input">
-                            <input type="text" id="requestUrl" placeholder="https://api.example.com" value="http://localhost:8082">
-                        </div>
-                        <div class="send-button">
-                            <button class="action-btn send-btn" id="sendRequestBtn">Send</button>
-                        </div>
-                    </div>
-                    
-                    <div class="request-tabs">
-                        <button class="tab-button active" data-tab="params">QUERY PARAMETERS</button>
-                        <button class="tab-button" data-tab="headers">HEADERS</button>
-                        <button class="tab-button" data-tab="body">BODY</button>
-                    </div>
-                    
-                    <div class="request-tab-content">
-                        <div class="tab-pane active" id="params-tab">
-                            <div class="params-container">
-                                <div class="param-header">
-                                    <span>KEY</span>
-                                    <span>VALUE</span>
-                                    <span>DESCRIPTION</span>
-                                    <span>ACTION</span>
-                                </div>
-                                <div class="param-list" id="paramList">
-                                    <div class="param-item">
-                                        <input type="text" placeholder="Key">
-                                        <input type="text" placeholder="Value">
-                                        <input type="text" placeholder="Description">
-                                        <button class="remove-param">×</button>
-                                    </div>
-                                </div>
-                                <button class="add-param-btn" id="addParamBtn">Add Parameter</button>
+                        <div class="request-header">
+                            <div class="method-selector">
+                                <select id="requestMethod">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+                            <div class="url-input">
+                                <input type="text" id="requestUrl" placeholder="https://api.example.com" value="http://localhost:8082">
+                            </div>
+                            <div class="send-button">
+                                <button class="action-btn send-btn" id="sendRequestBtn">Send</button>
                             </div>
                         </div>
                         
-                        <div class="tab-pane" id="headers-tab">
-                            <div class="headers-container">
-                                <div class="header-header">
-                                    <span>KEY</span>
-                                    <span>VALUE</span>
-                                    <span>ACTION</span>
-                                </div>
-                                <div class="header-list" id="headerList">
-                                    <div class="header-item">
-                                        <input type="text" value="Content-Type">
-                                        <input type="text" value="application/json">
-                                        <button class="remove-header">×</button>
-                                    </div>
-                                    <div class="header-item">
-                                        <input type="text" value="userToken">
-                                        <input type="text" value="1">
-                                        <button class="remove-header">×</button>
-                                    </div>
-                                </div>
-                                <button class="add-header-btn" id="addHeaderBtn">Add Header</button>
-                            </div>
+                        <div class="request-tabs">
+                            <button class="tab-button active" data-tab="params">QUERY PARAMETERS</button>
+                            <button class="tab-button" data-tab="headers">HEADERS</button>
+                            <button class="tab-button" data-tab="body">BODY</button>
                         </div>
                         
-                        <div class="tab-pane" id="body-tab">
-                            <div class="body-header">
-                                <div class="body-type-selector">
-                                    <button class="body-type-btn active" data-type="raw">Raw</button>
-                                    <button class="body-type-btn" data-type="form-data">Form-Data</button>
-                                    <button class="body-type-btn" data-type="x-www-form-urlencoded">x-www-form-urlencoded</button>
-                                    <button class="body-type-btn" data-type="file">File</button>
-                                </div>
-                                <div class="body-actions">
-                                    <button class="small-btn" id="formatBodyBtn">格式化</button>
-                                    <button class="small-btn" id="clearBodyBtn">清空</button>
+                        <div class="request-tab-content">
+                            <div class="tab-pane active" id="params-tab">
+                                <div class="params-container">
+                                    <div class="param-header">
+                                        <span>KEY</span>
+                                        <span>VALUE</span>
+                                        <span>DESCRIPTION</span>
+                                        <span>ACTION</span>
+                                    </div>
+                                    <div class="param-list" id="paramList">
+                                        <div class="param-item">
+                                            <input type="text" placeholder="Key">
+                                            <input type="text" placeholder="Value">
+                                            <input type="text" placeholder="Description">
+                                            <button class="remove-param">×</button>
+                                        </div>
+                                    </div>
+                                    <button class="add-param-btn" id="addParamBtn">Add Parameter</button>
                                 </div>
                             </div>
                             
-                            <div class="body-content">
-                                <div class="body-pane active" id="raw-body">
-                                    <div class="body-type">
-                                        <label>Format:</label>
-                                        <select id="rawFormat">
-                                            <option value="json" selected>JSON</option>
-                                            <option value="xml">XML</option>
-                                            <option value="text">Text</option>
-                                        </select>
+                            <div class="tab-pane" id="headers-tab">
+                                <div class="headers-container">
+                                    <div class="header-header">
+                                        <span>KEY</span>
+                                        <span>VALUE</span>
+                                        <span>ACTION</span>
                                     </div>
-                                    <textarea id="requestBody" placeholder='{"key": "value"}'>{"title": "foo", "body": "bar", "userId": 1}</textarea>
+                                    <div class="header-list" id="headerList">
+                                        <div class="header-item">
+                                            <input type="text" value="Content-Type">
+                                            <input type="text" value="application/json">
+                                            <button class="remove-header">×</button>
+                                        </div>
+                                        <div class="header-item">
+                                            <input type="text" value="userToken">
+                                            <input type="text" value="1">
+                                            <button class="remove-header">×</button>
+                                        </div>
+                                    </div>
+                                    <button class="add-header-btn" id="addHeaderBtn">Add Header</button>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-pane" id="body-tab">
+                                <div class="body-header">
+                                    <div class="body-type-selector">
+                                        <button class="body-type-btn active" data-type="raw">Raw</button>
+                                        <button class="body-type-btn" data-type="form-data">Form-Data</button>
+                                        <button class="body-type-btn" data-type="x-www-form-urlencoded">x-www-form-urlencoded</button>
+                                        <button class="body-type-btn" data-type="file">File</button>
+                                    </div>
+                                    <div class="body-actions">
+                                        <button class="small-btn" id="formatBodyBtn">格式化</button>
+                                        <button class="small-btn" id="clearBodyBtn">清空</button>
+                                    </div>
                                 </div>
                                 
-                                <div class="body-pane" id="form-data-body">
-                                    <div class="form-data-container">
-                                        <div class="form-data-header">
-                                            <span>KEY</span>
-                                            <span>VALUE</span>
-                                            <span>TYPE</span>
-                                            <span>ACTION</span>
+                                <div class="body-content">
+                                    <div class="body-pane active" id="raw-body">
+                                        <div class="body-type">
+                                            <label>Format:</label>
+                                            <select id="rawFormat">
+                                                <option value="json" selected>JSON</option>
+                                                <option value="xml">XML</option>
+                                                <option value="text">Text</option>
+                                            </select>
                                         </div>
-                                        <div class="form-data-list" id="formDataList">
-                                            <div class="form-data-item">
-                                                <input type="text" placeholder="Key">
-                                                <input type="text" placeholder="Value">
-                                                <select class="form-data-type">
-                                                    <option value="text">Text</option>
-                                                    <option value="file">File</option>
-                                                </select>
-                                                <button class="remove-form-data">×</button>
+                                        <textarea id="requestBody" placeholder='{"key": "value"}'>{"title": "foo", "body": "bar", "userId": 1}</textarea>
+                                    </div>
+                                    
+                                    <div class="body-pane" id="form-data-body">
+                                        <div class="form-data-container">
+                                            <div class="form-data-header">
+                                                <span>KEY</span>
+                                                <span>VALUE</span>
+                                                <span>TYPE</span>
+                                                <span>ACTION</span>
                                             </div>
-                                        </div>
-                                        <button class="add-form-data-btn" id="addFormDataBtn">Add Form Data</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="body-pane" id="x-www-form-urlencoded-body">
-                                    <div class="url-encoded-container">
-                                        <div class="url-encoded-header">
-                                            <span>KEY</span>
-                                            <span>VALUE</span>
-                                            <span>ACTION</span>
-                                        </div>
-                                        <div class="url-encoded-list" id="urlEncodedList">
-                                            <div class="url-encoded-item">
-                                                <input type="text" placeholder="Key">
-                                                <input type="text" placeholder="Value">
-                                                <button class="remove-url-encoded">×</button>
+                                            <div class="form-data-list" id="formDataList">
+                                                <div class="form-data-item">
+                                                    <input type="text" placeholder="Key">
+                                                    <input type="text" placeholder="Value">
+                                                    <select class="form-data-type">
+                                                        <option value="text">Text</option>
+                                                        <option value="file">File</option>
+                                                    </select>
+                                                    <button class="remove-form-data">×</button>
+                                                </div>
                                             </div>
+                                            <button class="add-form-data-btn" id="addFormDataBtn">Add Form Data</button>
                                         </div>
-                                        <button class="add-url-encoded-btn" id="addUrlEncodedBtn">Add Parameter</button>
                                     </div>
-                                </div>
-                                
-                                <div class="body-pane" id="file-body">
-                                    <div class="file-container">
-                                        <label>File:</label>
-                                        <input type="file" id="fileInput">
-                                        <div class="file-info" id="fileInfo">No file selected</div>
+                                    
+                                    <div class="body-pane" id="x-www-form-urlencoded-body">
+                                        <div class="url-encoded-container">
+                                            <div class="url-encoded-header">
+                                                <span>KEY</span>
+                                                <span>VALUE</span>
+                                                <span>ACTION</span>
+                                            </div>
+                                            <div class="url-encoded-list" id="urlEncodedList">
+                                                <div class="url-encoded-item">
+                                                    <input type="text" placeholder="Key">
+                                                    <input type="text" placeholder="Value">
+                                                    <button class="remove-url-encoded">×</button>
+                                                </div>
+                                            </div>
+                                            <button class="add-url-encoded-btn" id="addUrlEncodedBtn">Add Parameter</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="body-pane" id="file-body">
+                                        <div class="file-container">
+                                            <label>File:</label>
+                                            <input type="file" id="fileInput">
+                                            <div class="file-info" id="fileInfo">No file selected</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            
-            <div class="panel">
+            </div>
+
+            <div class="panel response-panel">
                 <div class="panel-header">
                     <h2 id="responsePanelHeader">响应</h2>
                     <div class="actions">
-                        <button class="action-btn copy-btn" id="copyResponseBtn">Copy Response</button>
-                        <button class="action-btn download-btn" id="downloadResponseBtn">Download Response</button>
+                        <button class="action-btn copy-btn" id="copyResponseBtn">复制响应</button>
+                        <button class="action-btn download-btn" id="downloadResponseBtn">下载响应</button>
                     </div>
                 </div>
                 <div class="panel-content">
                     <div id="responseMessage" class="message"></div>
                     <div class="output-container" id="responseContainer">
-                        <div class="empty-state" id="responseEmptyState">
+                        <div class="empty-state" id="responseEmptyState" style="display: flex;">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/>
                             </svg>
@@ -1527,10 +1574,17 @@
                             <div class="response-time">耗时: <span id="responseTime"></span>ms</div>
                             <div class="response-size">大小: <span id="responseSize"></span> bytes</div>
                         </div>
-                        <pre id="responseOutput" style="display: none;"></pre>
+                        <div class="response-tabs" style="margin: 10px 0; border-bottom: 1px solid #e0e0e0;">
+                            <button class="tab-button active" data-tab="json">JSON</button>
+                            <button class="tab-button" data-tab="raw">Raw</button>
+                        </div>
+                        <pre id="responseOutput" style="display: none; visibility: hidden; opacity: 0; min-height: 200px; background-color: white; border: 1px solid #ccc; padding: 10px; white-space: pre; font-family: 'Courier New', Courier, monospace;"></pre>
+                        <pre id="responseRawOutput" style="display: none; visibility: hidden; opacity: 0; min-height: 200px; background-color: #f8f9fa; border: 1px solid #ccc; padding: 10px; white-space: pre; font-family: 'Courier New', Courier, monospace;"></pre>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
 
     <script src="formatter.js"></script>

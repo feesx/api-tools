@@ -23,6 +23,10 @@
     "activeTab",
     "scripting"
   ],
+  "host_permissions": [
+    "http://localhost:8082/*",
+    "https://localhost:8082/*"
+  ],
   "action": {
     "default_icon": {
       "16": "icons/icon16.svg",

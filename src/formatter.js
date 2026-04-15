@@ -3,7 +3,7 @@ let currentXML = null;
 let nodeIdCounter = 0;
 let formatTimeout = null;
 let currentTab = 'json';
-let currentLanguage = 'zh'; // 默认中文
+let currentLanguage = 'en'; // 默认英文
 
 // 文件大小格式化函数
 function formatFileSize(bytes) {
@@ -56,6 +56,7 @@ const translations = {
             search: 'Search',
             noHistory: 'No request history',
             requestConfig: 'Request Configuration',
+            request: 'Request',
             response: 'Response',
             send: 'Send',
             params: 'QUERY PARAMETERS',
@@ -152,6 +153,7 @@ const translations = {
             search: '搜索',
             noHistory: '暂无请求历史',
             requestConfig: '请求配置',
+            request: '请求',
             response: '响应',
             send: '发送',
             params: '查询参数',
@@ -571,6 +573,12 @@ function applyLanguage() {
             responsePanelHeader.textContent = t.postman.response;
         }
         
+        // 更新请求面板标题
+        const requestPanelHeader = document.querySelector('.request-panel .panel-header h2');
+        if (requestPanelHeader) {
+            requestPanelHeader.textContent = t.postman.request;
+        }
+        
         // 如果当前有JSON内容，重新计算统计信息
         if (currentJSON) {
             formatJSON();
@@ -592,8 +600,8 @@ document.addEventListener('DOMContentLoaded', function() {
     languageSelect.addEventListener('change', function() {
         changeLanguage(this.value);
     });
-    // 默认选择中文
-    languageSelect.value = 'zh';
+    // 默认选择当前语言
+    languageSelect.value = currentLanguage;
     // 初始化语言
     applyLanguage();
     
@@ -709,10 +717,9 @@ function setupEventListeners() {
         const bodyTab = document.querySelector('.tab-button[data-tab="body"]');
         const bodyTabPane = document.getElementById('body-tab');
         
-        if (method === 'GET' || method === 'DELETE') {
-            // GET或DELETE请求隐藏Body标签页
+        if (method === 'DELETE') {
+            // DELETE请求隐藏Body标签页
             bodyTab.style.display = 'none';
-            bodyTabPane.style.display = 'none';
             // 确保显示其他标签页
             const activeTab = document.querySelector('.tab-button.active');
             if (activeTab && activeTab.dataset.tab === 'body') {
@@ -725,7 +732,6 @@ function setupEventListeners() {
         } else {
             // 其他请求方法显示Body标签页
             bodyTab.style.display = 'inline-block';
-            bodyTabPane.style.display = 'block';
         }
     });
     
@@ -741,11 +747,11 @@ function setupEventListeners() {
     // 初始化时检查请求方法
     const initialMethod = document.getElementById('requestMethod').value;
     const bodyTab = document.querySelector('.tab-button[data-tab="body"]');
-    const bodyTabPane = document.getElementById('body-tab');
     
-    if (initialMethod === 'GET' || initialMethod === 'DELETE') {
+    if (initialMethod === 'DELETE') {
         bodyTab.style.display = 'none';
-        bodyTabPane.style.display = 'none';
+    } else {
+        bodyTab.style.display = 'inline-block';
     }
     document.getElementById('copyResponseBtn').addEventListener('click', copyResponse);
     document.getElementById('downloadResponseBtn').addEventListener('click', downloadResponse);
@@ -978,6 +984,31 @@ function setupEventListeners() {
     
     // 加载历史记录
     loadHistory();
+    
+    // 响应标签页切换
+    document.querySelectorAll('.response-tabs .tab-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            document.querySelectorAll('.response-tabs .tab-button').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            if (tab === 'json') {
+                document.getElementById('responseOutput').style.display = 'block';
+                document.getElementById('responseOutput').style.visibility = 'visible';
+                document.getElementById('responseOutput').style.opacity = '1';
+                document.getElementById('responseRawOutput').style.display = 'none';
+                document.getElementById('responseRawOutput').style.visibility = 'hidden';
+                document.getElementById('responseRawOutput').style.opacity = '0';
+            } else if (tab === 'raw') {
+                document.getElementById('responseOutput').style.display = 'none';
+                document.getElementById('responseOutput').style.visibility = 'hidden';
+                document.getElementById('responseOutput').style.opacity = '0';
+                document.getElementById('responseRawOutput').style.display = 'block';
+                document.getElementById('responseRawOutput').style.visibility = 'visible';
+                document.getElementById('responseRawOutput').style.opacity = '1';
+            }
+        });
+    });
 }
 
 function handlePaste(event) {
@@ -1629,18 +1660,61 @@ async function sendHttpRequest() {
         }
         
         // 显示响应内容
-        document.getElementById('responseEmptyState').style.display = 'none';
+        const responseEmptyState = document.getElementById('responseEmptyState');
         const responseOutput = document.getElementById('responseOutput');
-        responseOutput.style.display = 'block';
+        const responseRawOutput = document.getElementById('responseRawOutput');
         
-        // 尝试格式化JSON响应
+        console.log('=== Response content display ===');
+        console.log('responseOutput element:', responseOutput);
+        console.log('responseRawOutput element:', responseRawOutput);
+        console.log('responseText length:', responseText.length);
+        console.log('responseText:', responseText);
+        
+        // 强制显示响应内容
+        responseEmptyState.style.display = 'none';
+        
+        // 显示原始响应
+        responseRawOutput.style.display = 'block';
+        responseRawOutput.style.visibility = 'visible';
+        responseRawOutput.style.opacity = '1';
+        responseRawOutput.textContent = responseText;
+        
+        // 尝试将响应解析为 JSON 并格式化显示
         try {
-            const parsedResponse = JSON.parse(responseText);
-            responseOutput.innerHTML = formatJSONWithSyntax(parsedResponse);
-        } catch (e) {
-            // 如果不是JSON，显示原始文本
-            responseOutput.textContent = responseText;
+            const parsedJSON = JSON.parse(responseText);
+            const formattedJSON = JSON.stringify(parsedJSON, null, 2);
+            responseOutput.style.display = 'block';
+            responseOutput.style.visibility = 'visible';
+            responseOutput.style.opacity = '1';
+            
+            // 为 JSON 添加语法高亮
+            const highlightedJSON = formatJSONWithSyntax(parsedJSON);
+            responseOutput.innerHTML = highlightedJSON;
+        } catch (error) {
+            // 如果不是 JSON，只显示原始响应
+            responseOutput.style.display = 'none';
+            responseOutput.style.visibility = 'hidden';
+            responseOutput.style.opacity = '0';
         }
+        
+        // 默认显示 JSON 标签页
+        document.querySelector('.response-tabs .tab-button[data-tab="json"]').classList.add('active');
+        document.querySelector('.response-tabs .tab-button[data-tab="raw"]').classList.remove('active');
+        responseOutput.style.display = 'block';
+        responseOutput.style.visibility = 'visible';
+        responseOutput.style.opacity = '1';
+        responseRawOutput.style.display = 'none';
+        responseRawOutput.style.visibility = 'hidden';
+        responseRawOutput.style.opacity = '0';
+        
+        // 确保响应内容可见
+        responseOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // 最后检查并确认响应内容已设置
+        console.log('responseOutput final display:', responseOutput.style.display);
+        console.log('responseOutput text content length:', responseOutput.textContent.length);
+        console.log('responseRawOutput final display:', responseRawOutput.style.display);
+        console.log('responseRawOutput text content length:', responseRawOutput.textContent.length);
         
         showResponseMessage('请求成功', 'success');
         
