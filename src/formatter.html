@@ -69,8 +69,10 @@
         .main-container {
             flex: 1;
             display: flex;
+            flex-direction: row;
             gap: 1.5rem;
             min-height: 0;
+            padding: 1.5rem;
         }
 
         .panel {
@@ -80,6 +82,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            flex: 1;
+            min-width: 0;
         }
 
         .panel-header {
@@ -1309,7 +1313,6 @@
                     </div>
                     <pre id="jsonOutput" style="display: none;"></pre>
                 </div>
-                <div class="stats" id="stats" style="display: none;"></div>
             </div>
         </div>
     </div>

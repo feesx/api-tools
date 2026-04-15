@@ -1071,13 +1071,11 @@ function formatJSON() {
     const jsonInput = document.getElementById('jsonInput').value.trim();
     const messageDiv = document.getElementById('message');
     const jsonOutput = document.getElementById('jsonOutput');
-    const statsDiv = document.getElementById('stats');
     const emptyState = document.getElementById('emptyState');
     
     if (!jsonInput) {
         emptyState.style.display = 'flex';
         jsonOutput.style.display = 'none';
-        statsDiv.style.display = 'none';
         messageDiv.style.display = 'none';
         currentJSON = null;
         return;
@@ -1087,13 +1085,10 @@ function formatJSON() {
         currentJSON = JSON.parse(jsonInput);
         nodeIdCounter = 0;
         const formattedHTML = formatJSONWithSyntax(currentJSON);
-        const stats = calculateJSONStats(currentJSON);
         
         jsonOutput.innerHTML = formattedHTML;
-        statsDiv.textContent = stats;
         emptyState.style.display = 'none';
         jsonOutput.style.display = 'block';
-        statsDiv.style.display = 'block';
         messageDiv.style.display = 'none';
         
         setupCollapsibleElements();
@@ -1101,7 +1096,6 @@ function formatJSON() {
         showMessage(`JSON解析错误: ${error.message}`, 'error');
         emptyState.style.display = 'flex';
         jsonOutput.style.display = 'none';
-        statsDiv.style.display = 'none';
     }
 }
 
