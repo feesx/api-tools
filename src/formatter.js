@@ -33,6 +33,8 @@ const translations = {
             expandAll: 'Expand All',
             collapseAll: 'Collapse All',
             download: 'Download',
+            compressAndEscape: 'Compress & Escape',
+            compress: 'Compress',
             placeholder: 'Paste JSON string here...',
             emptyState: 'Formatted content will appear here',
             stats: 'Stats: {keys} keys {values} values {objects} objects {arrays} arrays {strings} strings {numbers} numbers {booleans} booleans {nulls} nulls'
@@ -110,7 +112,12 @@ const translations = {
             downloaded: 'Response downloaded',
             noResponse: 'No response content to copy',
             noResponseDownload: 'No response content to download',
-            requestCleared: 'Request cleared'
+            requestCleared: 'Request cleared',
+            compressAndEscapeSuccess: 'Compressed and escaped, copied to clipboard',
+            compressSuccess: 'Compressed, copied to clipboard',
+            compressAndEscapeSuccessButCopyFailed: 'Compressed and escaped, but copy failed: {error}',
+            compressSuccessButCopyFailed: 'Compressed, but copy failed: {error}',
+            noJsonContent: 'Please enter JSON content'
         }
     },
     zh: {
@@ -130,6 +137,8 @@ const translations = {
             expandAll: '展开全部',
             collapseAll: '折叠全部',
             download: '下载',
+            compressAndEscape: '压缩并转义',
+            compress: '压缩',
             placeholder: '在此粘贴JSON字符串...',
             emptyState: '格式化后的内容将显示在这里',
             stats: '统计: {keys}键 {values}值 {objects}对象 {arrays}数组 {strings}字符串 {numbers}数字 {booleans}布尔 {nulls}null'
@@ -207,7 +216,12 @@ const translations = {
             downloaded: '响应已下载',
             noResponse: '没有响应内容可复制',
             noResponseDownload: '没有响应内容可下载',
-            requestCleared: '请求已清空'
+            requestCleared: '请求已清空',
+            compressAndEscapeSuccess: '压缩并转义成功，已复制到剪贴板',
+            compressSuccess: '压缩成功，已复制到剪贴板',
+            compressAndEscapeSuccessButCopyFailed: '压缩并转义成功，但复制失败: {error}',
+            compressSuccessButCopyFailed: '压缩成功，但复制失败: {error}',
+            noJsonContent: '请输入JSON内容'
         }
     }
 };
@@ -286,6 +300,16 @@ function applyLanguage() {
         const downloadBtn = document.querySelector('#downloadBtn');
         if (downloadBtn) {
             downloadBtn.textContent = t.json.download;
+        }
+        
+        const compressEscapeJsonBtn = document.querySelector('#compressEscapeJson');
+        if (compressEscapeJsonBtn) {
+            compressEscapeJsonBtn.textContent = t.json.compressAndEscape;
+        }
+        
+        const compressZipJsonBtn = document.querySelector('#compressZipJson');
+        if (compressZipJsonBtn) {
+            compressZipJsonBtn.textContent = t.json.compress;
         }
         
         const jsonInput = document.getElementById('jsonInput');
@@ -665,6 +689,8 @@ function setupEventListeners() {
     document.getElementById('downloadBtn').addEventListener('click', downloadContent);
     document.getElementById('expandAllBtn').addEventListener('click', expandAll);
     document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
+    document.getElementById('compressEscapeJson').addEventListener('click', compressAndEscapeJson);
+    document.getElementById('compressZipJson').addEventListener('click', compressJson);
     
     // XML相关事件
     document.getElementById('copyXmlInputBtn').addEventListener('click', copyXmlInput);
@@ -2423,4 +2449,81 @@ function downloadContent() {
         
         showMessage('文件已下载！', 'success');
     }
+}
+
+function compressAndEscapeJson() {
+    const jsonInput = document.getElementById('jsonInput').value.trim();
+    const messageDiv = document.getElementById('message');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const emptyState = document.getElementById('emptyState');
+    const t = translations[currentLanguage];
+    
+    if (!jsonInput) {
+        showMessage(t.messages.noJsonContent, 'error');
+        return;
+    }
+    
+    try {
+        const jsonObj = JSON.parse(jsonInput);
+        // 先压缩，然后转义成JSON字符串
+        const compressed = JSON.stringify(jsonObj);
+        const escaped = JSON.stringify(compressed).slice(1, -1);
+        
+        // 显示在输出区域
+        emptyState.style.display = 'none';
+        jsonOutput.style.display = 'block';
+        jsonOutput.innerHTML = `<span style="font-family: 'Courier New', monospace; white-space: pre-wrap; color: #333;">${escapeHtml(escaped)}</span>`;
+        
+        // 复制到剪贴板
+        navigator.clipboard.writeText(escaped).then(() => {
+            showMessage(t.messages.compressAndEscapeSuccess, 'success');
+        }).catch(err => {
+            showMessage(t.messages.compressAndEscapeSuccessButCopyFailed.replace('{error}', err), 'error');
+        });
+    } catch (error) {
+        showMessage(t.messages.jsonError.replace('{error}', error.message), 'error');
+    }
+}
+
+function compressJson() {
+    const jsonInput = document.getElementById('jsonInput').value.trim();
+    const messageDiv = document.getElementById('message');
+    const jsonOutput = document.getElementById('jsonOutput');
+    const emptyState = document.getElementById('emptyState');
+    const t = translations[currentLanguage];
+    
+    if (!jsonInput) {
+        showMessage(t.messages.noJsonContent, 'error');
+        return;
+    }
+    
+    try {
+        const jsonObj = JSON.parse(jsonInput);
+        const compressed = JSON.stringify(jsonObj);
+        
+        // 显示在输出区域
+        emptyState.style.display = 'none';
+        jsonOutput.style.display = 'block';
+        jsonOutput.innerHTML = `<span style="font-family: 'Courier New', monospace; white-space: pre-wrap; color: #333;">${escapeHtml(compressed)}</span>`;
+        
+        // 复制到剪贴板
+        navigator.clipboard.writeText(compressed).then(() => {
+            showMessage(t.messages.compressSuccess, 'success');
+        }).catch(err => {
+            showMessage(t.messages.compressSuccessButCopyFailed.replace('{error}', err), 'error');
+        });
+    } catch (error) {
+        showMessage(t.messages.jsonError.replace('{error}', error.message), 'error');
+    }
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"]/g, m => map[m]);
 }
