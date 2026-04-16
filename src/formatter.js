@@ -1114,28 +1114,177 @@ function formatXML() {
     }
     
     try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xmlInput, 'text/xml');
+        const formatted = formatXMLSimple(xmlInput);
+        const highlighted = highlightXML(formatted);
         
-        const errorNode = doc.querySelector('parsererror');
-        if (errorNode) {
-            throw new Error(errorNode.textContent);
-        }
-        
-        nodeIdCounter = 0;
-        const formattedHTML = formatXMLWithSyntax(doc.documentElement);
-        
-        xmlOutput.innerHTML = formattedHTML;
+        xmlOutput.innerHTML = highlighted;
         emptyState.style.display = 'none';
         xmlOutput.style.display = 'block';
         messageDiv.style.display = 'none';
         
-        currentXML = doc;
     } catch (error) {
-        showXmlMessage(`XML解析错误: ${error.message.message || error.message}`, 'error');
+        showXmlMessage(`格式化错误: ${error.message}`, 'error');
         emptyState.style.display = 'flex';
         xmlOutput.style.display = 'none';
     }
+}
+
+function formatXMLSimple(text) {
+    const step = '  ';
+    const shift = ['\n'];
+    for (let i = 0; i < 100; i++) {
+        shift.push(shift[i] + step);
+    }
+    
+    let ar = text.replace(/>\s{0,}</g, "><")
+                 .replace(/</g, "~::~<")
+                 .replace(/\s*xmlns\:/g, "~::~xmlns:")
+                 .replace(/\s*xmlns\=/g, "~::~xmlns=")
+                 .split('~::~');
+    
+    let len = ar.length;
+    let inComment = false;
+    let deep = 0;
+    let str = '';
+    let ix = 0;
+    
+    for (ix = 0; ix < len; ix++) {
+        if (ar[ix].search(/<!/) > -1) {
+            str += shift[deep] + ar[ix];
+            inComment = true;
+            if (ar[ix].search(/-->/) > -1 || ar[ix].search(/\]>/) > -1 || ar[ix].search(/!DOCTYPE/) > -1) {
+                inComment = false;
+            }
+        } else if (ar[ix].search(/-->/) > -1 || ar[ix].search(/\]>/) > -1) {
+            str += ar[ix];
+            inComment = false;
+        } else if (/^<\w/.exec(ar[ix - 1]) && /^<\/\w/.exec(ar[ix]) &&
+            /^<[\w:\-\.\,]+/.exec(ar[ix - 1]) == /^<\/[\w:\-\.\,]+/.exec(ar[ix])[0].replace('/', '')) {
+            str += ar[ix];
+            if (!inComment) deep--;
+        } else if (ar[ix].search(/<\w/) > -1 && ar[ix].search(/<\//) == -1 && ar[ix].search(/\/>/) == -1) {
+            str = !inComment ? str += shift[deep++] + ar[ix] : str += ar[ix];
+        } else if (ar[ix].search(/<\w/) > -1 && ar[ix].search(/<\//) > -1) {
+            str = !inComment ? str += shift[deep] + ar[ix] : str += ar[ix];
+        } else if (ar[ix].search(/<\//) > -1) {
+            str = !inComment ? str += shift[--deep] + ar[ix] : str += ar[ix];
+        } else if (ar[ix].search(/\/>/) > -1) {
+            str = !inComment ? str += shift[deep] + ar[ix] : str += ar[ix];
+        } else if (ar[ix].search(/<\?/) > -1) {
+            str += shift[deep] + ar[ix];
+        } else if (ar[ix].search(/xmlns\:/) > -1 || ar[ix].search(/xmlns\=/) > -1) {
+            str += shift[deep] + ar[ix];
+        } else {
+            str += ar[ix];
+        }
+    }
+    
+    return (str[0] == '\n') ? str.slice(1) : str;
+}
+
+function highlightXML(xml) {
+    return xml.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/(&lt;\/?[\w\-:]+)([^&]*?)(&gt;)/g, function(match, openTag, attrs, closeTag) {
+                  let result = '<span class="xml-tag">' + openTag + '</span>';
+                  if (attrs) {
+                      result += attrs.replace(/([\w\-:]+)=(".*?")/g, 
+                          '<span class="xml-attribute">$1</span>=<span class="xml-attribute-value">$2</span>');
+                  }
+                  result += '<span class="xml-tag">' + closeTag + '</span>';
+                  return result;
+              })
+              .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="xml-comment">$1</span>');
+}
+
+function preprocessXML(xml) {
+    let result = xml;
+    
+    result = result.replace(/<!--[\s\S]*?-->/g, function(match) {
+        return match.replace(/\s+/g, ' ');
+    });
+    
+    let inTag = false;
+    let tagContent = '';
+    let output = '';
+    
+    for (let i = 0; i < result.length; i++) {
+        const char = result[i];
+        
+        if (char === '<') {
+            if (inTag) {
+                output += '<' + tagContent;
+            }
+            inTag = true;
+            tagContent = '';
+        } else if (char === '>') {
+            if (inTag) {
+                inTag = false;
+                tagContent = tagContent.replace(/\s+/g, ' ').trim();
+                output += '<' + tagContent + '>';
+                tagContent = '';
+            } else {
+                output += char;
+            }
+        } else if (inTag) {
+            tagContent += char;
+        } else {
+            output += char;
+        }
+    }
+    
+    if (inTag) {
+        output += '<' + tagContent;
+    }
+    
+    output = output.replace(/>\s+</g, '><');
+    
+    output = output.trim();
+    
+    return output;
+}
+
+function validateXMLTags(xml) {
+    const tagStack = [];
+    const selfClosingPattern = /\/$/;
+    const tagPattern = /<([^>]+)>/g;
+    let match;
+    
+    while ((match = tagPattern.exec(xml)) !== null) {
+        let tagContent = match[1].trim();
+        
+        if (tagContent.startsWith('?') || tagContent.startsWith('!')) {
+            continue;
+        }
+        
+        if (selfClosingPattern.test(tagContent)) {
+            continue;
+        }
+        
+        if (tagContent.startsWith('/')) {
+            const tagName = tagContent.substring(1).trim().split(/\s+/)[0];
+            if (tagStack.length === 0) {
+                return { valid: false, error: `多余的闭合标签: </${tagName}>` };
+            }
+            const lastTag = tagStack.pop();
+            if (lastTag !== tagName) {
+                return { valid: false, error: `标签不匹配: 期望 </${lastTag}> 但找到 </${tagName}>` };
+            }
+        } else {
+            const tagName = tagContent.split(/\s+/)[0];
+            tagStack.push(tagName);
+        }
+    }
+    
+    if (tagStack.length > 0) {
+        return { 
+            valid: false, 
+            error: `XML 不完整，缺少闭合标签: ${tagStack.map(t => `</${t}>`).join(', ')}` 
+        };
+    }
+    
+    return { valid: true };
 }
 
 function formatJSONWithSyntax(obj, level = 0) {
@@ -1228,7 +1377,7 @@ function formatXMLWithSyntax(node, level = 0) {
     if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent.trim();
         if (text) {
-            return `<span class="xml-text">${escapeHtml(text)}</span>`;
+            return `${indent}<span class="xml-text">${escapeHtml(text)}</span>`;
         }
         return '';
     }
@@ -1247,36 +1396,37 @@ function formatXMLWithSyntax(node, level = 0) {
             ` <span class="xml-attribute">${attr.name}</span>=<span class="xml-attribute-value">"${escapeHtml(attr.value)}"</span>`
         ).join('');
         
-        const children = Array.from(node.childNodes);
-        const hasChildren = children.some(child => 
+        const children = Array.from(node.childNodes).filter(child => 
             child.nodeType === Node.ELEMENT_NODE || 
             (child.nodeType === Node.TEXT_NODE && child.textContent.trim())
         );
 
+        const hasChildren = children.length > 0;
+
         if (!hasChildren) {
-            return `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag"/&gt;</span>`;
+            const selfClosing = `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag"> /&gt;</span>`;
+            return selfClosing;
         }
 
-        // 检查是否只有一个文本子节点
         const hasOnlyTextChild = children.length === 1 && children[0].nodeType === Node.TEXT_NODE;
         
         if (hasOnlyTextChild) {
             const textContent = children[0].textContent.trim();
             if (textContent) {
-                return `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag"&gt;</span><span class="xml-text">${escapeHtml(textContent)}</span><span class="xml-tag">&lt;/${tagName}&gt;</span>`;
+                return `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag">&gt;</span><span class="xml-text">${escapeHtml(textContent)}</span><span class="xml-tag">&lt;/${tagName}&gt;</span>`;
             }
         }
 
-        html += `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag"&gt;</span>`;
+        html += `${indent}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag">&gt;</span>`;
 
-        children.forEach(child => {
+        children.forEach((child, index) => {
             const childHTML = formatXMLWithSyntax(child, level + 1);
             if (childHTML) {
-                html += `<br>${childHTML}`;
+                html += `\n${childHTML}`;
             }
         });
 
-        html += `<br>${indent}<span class="xml-tag">&lt;/${tagName}&gt;</span>`;
+        html += `\n${indent}<span class="xml-tag">&lt;/${tagName}&gt;</span>`;
         return html;
     }
 
@@ -1996,19 +2146,6 @@ function updateHistoryList() {
 // XML相关函数
 function handleXmlPaste() {
     setTimeout(function() {
-        const xmlInput = document.getElementById('xmlInput');
-        const xmlContent = xmlInput.value;
-        
-        if (xmlContent) {
-            try {
-                // 格式化XML输入内容
-                const formattedXml = formatXmlString(xmlContent);
-                xmlInput.value = formattedXml;
-            } catch (error) {
-                console.error('XML格式化失败:', error);
-            }
-        }
-        
         formatContent();
     }, 10);
 }
