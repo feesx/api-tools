@@ -22,7 +22,8 @@ const translations = {
         tabs: {
             postman: 'API Testing',
             json: 'JSON Formatter',
-            xml: 'XML Formatter'
+            xml: 'XML Formatter',
+            webservice: 'WebService'
         },
         // JSON部分
         json: {
@@ -126,7 +127,8 @@ const translations = {
         tabs: {
             postman: 'API测试',
             json: 'JSON格式化',
-            xml: 'XML格式化'
+            xml: 'XML格式化',
+            webservice: 'WebService'
         },
         // JSON部分
         json: {
@@ -259,6 +261,11 @@ function applyLanguage() {
         const xmlTab = document.querySelector('.tab[data-tab="xml"]');
         if (xmlTab) {
             xmlTab.textContent = t.tabs.xml;
+        }
+        
+        const webserviceTab = document.querySelector('.tab[data-tab="webservice"]');
+        if (webserviceTab) {
+            webserviceTab.textContent = t.tabs.webservice;
         }
         
         // 更新JSON部分
@@ -667,6 +674,7 @@ function switchTab(tabName) {
     document.getElementById('jsonContainer').style.display = 'none';
     document.getElementById('xmlContainer').style.display = 'none';
     document.getElementById('postmanContainer').style.display = 'none';
+    document.getElementById('webserviceContainer').style.display = 'none';
     
     // 显示对应容器
     if (tabName === 'json') {
@@ -677,6 +685,11 @@ function switchTab(tabName) {
         formatContent();
     } else if (tabName === 'postman') {
         document.getElementById('postmanContainer').style.display = 'flex';
+    } else if (tabName === 'webservice') {
+        document.getElementById('webserviceContainer').style.display = 'flex';
+        if (window.webserviceModule) {
+            window.webserviceModule.init(currentLanguage);
+        }
     }
 }
 
