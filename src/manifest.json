@@ -14,8 +14,12 @@
         "*://*/*",
         "file:///*"
       ],
-      "js": ["content.js"],
-      "run_at": "document_end"
+      "js": [
+        "libs/xlsx.full.min.js",
+        "libs/mammoth.browser.min.js",
+        "content.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "background": {

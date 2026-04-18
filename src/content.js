@@ -4,18 +4,29 @@
   if (window._apiToolsContentLoaded) return;
   window._apiToolsContentLoaded = true;
 
+  console.log('=== content.js loaded ===');
+  console.log('URL:', window.location.href);
+  console.log('readyState:', document.readyState);
+
   class MarkdownFormatter {
     constructor() {
       this.theme = 'dark';
     }
 
     init() {
-      const url = window.location.href.toLowerCase();
-      const isMarkdownFile = url.match(/\.(md|markdown|mdx|mkd)(\?|#|$)/i) || url.startsWith('file://');
+      const url = window.location.href;
+      const urlLower = url.toLowerCase();
+      const markdownPattern = /\.(md|markdown|mdx|mkd)(\?|#|$)/i;
+      const isHtmlFile = /\.(html|htm)(\?|#|$)/i.test(urlLower);
+      const isFileProtocolNoExt = urlLower.startsWith('file://') && !/\.\w+(\?|#|$)/.test(urlLower);
+      const isMarkdownFile = markdownPattern.test(urlLower) || isFileProtocolNoExt;
 
       console.log('=== MarkdownFormatter Debug ===');
-      console.log('URL:', window.location.href);
-      console.log('Is Markdown:', !!isMarkdownFile);
+      console.log('URL:', urlLower);
+      console.log('Is Markdown Ext:', markdownPattern.test(urlLower));
+      console.log('Is HTML:', isHtmlFile);
+      console.log('Is File No Ext:', isFileProtocolNoExt);
+      console.log('Is Markdown:', isMarkdownFile);
 
       if (!isMarkdownFile) {
         console.log('Not a markdown file, skipping');
@@ -421,5 +432,4 @@
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     new MarkdownFormatter().init();
   }
-
 })();
