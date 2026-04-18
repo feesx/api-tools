@@ -23,7 +23,8 @@ const translations = {
             postman: 'API Testing',
             json: 'JSON Formatter',
             xml: 'XML Formatter',
-            webservice: 'WebService'
+            webservice: 'WebService',
+            markdown: 'Markdown'
         },
         // JSON部分
         json: {
@@ -128,7 +129,8 @@ const translations = {
             postman: 'API测试',
             json: 'JSON格式化',
             xml: 'XML格式化',
-            webservice: 'WebService'
+            webservice: 'WebService',
+            markdown: 'Markdown'
         },
         // JSON部分
         json: {
@@ -234,6 +236,9 @@ function changeLanguage(lang) {
     applyLanguage();
     if (window.webserviceModule) {
         window.webserviceModule.setLanguage(lang);
+    }
+    if (window.markdownModule) {
+        window.markdownModule.setLanguage(lang);
     }
 }
 
@@ -678,6 +683,7 @@ function switchTab(tabName) {
     document.getElementById('xmlContainer').style.display = 'none';
     document.getElementById('postmanContainer').style.display = 'none';
     document.getElementById('webserviceContainer').style.display = 'none';
+    document.getElementById('markdownContainer').style.display = 'none';
     
     // 显示对应容器
     if (tabName === 'json') {
@@ -692,6 +698,11 @@ function switchTab(tabName) {
         document.getElementById('webserviceContainer').style.display = 'flex';
         if (window.webserviceModule) {
             window.webserviceModule.init(currentLanguage);
+        }
+    } else if (tabName === 'markdown') {
+        document.getElementById('markdownContainer').style.display = 'flex';
+        if (window.markdownModule) {
+            window.markdownModule.init(currentLanguage);
         }
     }
 }
