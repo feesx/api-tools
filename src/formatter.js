@@ -232,6 +232,9 @@ const translations = {
 function changeLanguage(lang) {
     currentLanguage = lang;
     applyLanguage();
+    if (window.webserviceModule) {
+        window.webserviceModule.setLanguage(lang);
+    }
 }
 
 // 应用语言

@@ -6,93 +6,138 @@
 
     let currentTab = 'request';
     let webserviceHistory = [];
+    let currentLanguage = 'zh';
+
+    function applyWebServiceLanguage(lang) {
+        currentLanguage = lang;
+        const t = webserviceTranslations[lang];
+        if (!t) return;
+
+        const setText = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        };
+
+        setText('wsHistoryTitle', t.history);
+        setText('wsClearHistoryBtn', t.clearHistory);
+        setText('wsEmptyHistory', t.noHistory);
+        setText('wsRequestTitle', t.request);
+        setText('wsResponseTitle', t.response);
+        setText('wsEndpointLabel', t.endpoint);
+        setText('wsSoapActionLabel', t.soapAction);
+        setText('wsHeadersLabel', t.headers);
+        setText('wsAddHeaderBtn', t.addHeader);
+        setText('wsBodyLabel', t.requestBody);
+        setText('wsFormatBtn', t.format);
+        setText('wsClearBtn', t.clear);
+        setText('wsCopyReqBtn', t.copy);
+        setText('wsSendBtn', t.sendRequest);
+        setText('wsCopyResBtn', t.copy);
+        setText('wsResponseStatusLabel', t.responseStatus);
+        setText('wsResponseTimeLabel', t.responseTime);
+        setText('wsResponseSizeLabel', t.responseSize);
+        setText('wsTabRaw', t.raw);
+        setText('wsTabFormatted', t.formatted);
+        setText('wsTabHeaders', t.responseHeaders);
+
+        const wsEndpoint = document.getElementById('wsEndpoint');
+        if (wsEndpoint) wsEndpoint.placeholder = t.endpointPlaceholder;
+
+        const wsSoapAction = document.getElementById('wsSoapAction');
+        if (wsSoapAction) wsSoapAction.placeholder = t.soapActionPlaceholder;
+
+        document.querySelectorAll('.ws-header-key').forEach(el => {
+            el.placeholder = t.headerKey;
+        });
+        document.querySelectorAll('.ws-header-value').forEach(el => {
+            el.placeholder = t.headerValue;
+        });
+    }
 
     // WebService 翻译
     const webserviceTranslations = {
         en: {
             webService: 'WebService',
-            endpoint: 'Endpoint URL',
-            endpointPlaceholder: 'https://example.com/service?wsdl',
-            operation: 'Operation',
-            operationPlaceholder: 'Select or enter operation',
-            soapAction: 'SOAP Action',
-            soapActionPlaceholder: 'SOAPAction header value',
-            namespace: 'Namespace',
-            namespacePlaceholder: 'http://example.com/namespace',
-            requestBody: 'SOAP Request Body',
-            requestPlaceholder: '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">...</soap:Envelope>',
-            headers: 'Headers',
-            headerKey: 'Header Key',
-            headerValue: 'Header Value',
-            addHeader: 'Add Header',
-            removeHeader: 'Remove',
-            sendRequest: 'Send Request',
-            response: 'Response',
-            responseBody: 'Response Body',
-            responseHeaders: 'Response Headers',
-            raw: 'Raw',
-            formatted: 'Formatted',
-            status: 'Status',
-            time: 'Time',
-            size: 'Size',
-            clearRequest: 'Clear',
-            formatRequest: 'Format',
-            copyRequest: 'Copy',
-            copyResponse: 'Copy',
             history: 'History',
             clearHistory: 'Clear History',
             noHistory: 'No request history',
+            request: 'Request',
+            response: 'Response',
+            endpoint: 'Endpoint URL',
+            endpointPlaceholder: 'https://example.com/service?wsdl',
+            soapAction: 'SOAP Action (Optional)',
+            soapActionPlaceholder: 'http://example.com/action',
+            headers: 'Headers',
+            headerKey: 'Key',
+            headerValue: 'Value',
+            addHeader: 'Add',
+            requestBody: 'SOAP Request Body',
+            format: 'Format',
+            clear: 'Clear',
+            copy: 'Copy',
+            sendRequest: 'Send Request',
+            sending: 'Sending...',
+            responseStatus: 'Status:',
+            responseTime: 'Time:',
+            responseSize: 'Size:',
+            raw: 'Raw',
+            formatted: 'Formatted',
+            responseHeaders: 'Response Headers',
             requestSent: 'Request sent',
             requestError: 'Request error',
             copied: 'Copied',
-            formatted: 'Request formatted',
+            formattedMsg: 'Request formatted',
             noContent: 'No content to format',
-            invalidUrl: 'Please enter a valid URL'
+            invalidUrl: 'Please enter a valid URL',
+            enterUrl: 'Please enter endpoint URL',
+            enterBody: 'Please enter request body',
+            requestCleared: 'Request cleared',
+            historyCleared: 'History cleared'
         },
         zh: {
             webService: 'WebService',
+            history: '历史记录',
+            clearHistory: '清空历史',
+            noHistory: '暂无请求历史',
+            request: '请求',
+            response: '响应',
             endpoint: '端点 URL',
             endpointPlaceholder: 'https://example.com/service?wsdl',
-            operation: '操作',
-            operationPlaceholder: '选择或输入操作',
-            soapAction: 'SOAP Action',
-            soapActionPlaceholder: 'SOAPAction 头值',
-            namespace: '命名空间',
-            namespacePlaceholder: 'http://example.com/namespace',
-            requestBody: 'SOAP 请求体',
-            requestPlaceholder: '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">...</soap:Envelope>',
+            soapAction: 'SOAP Action（可选）',
+            soapActionPlaceholder: 'http://example.com/action',
             headers: '请求头',
             headerKey: '键',
             headerValue: '值',
             addHeader: '添加',
-            removeHeader: '删除',
+            requestBody: 'SOAP 请求体',
+            format: '格式化',
+            clear: '清空',
+            copy: '复制',
             sendRequest: '发送请求',
-            response: '响应',
-            responseBody: '响应体',
-            responseHeaders: '响应头',
+            sending: '发送中...',
+            responseStatus: '状态:',
+            responseTime: '耗时:',
+            responseSize: '大小:',
             raw: '原始',
             formatted: '格式化',
-            status: '状态',
-            time: '耗时',
-            size: '大小',
-            clearRequest: '清空',
-            formatRequest: '格式化',
-            copyRequest: '复制',
-            copyResponse: '复制',
-            history: '历史记录',
-            clearHistory: '清空历史',
-            noHistory: '暂无请求历史',
-            requestSent: '请求已发送',
+            responseHeaders: '响应头',
+            requestSent: '请求成功',
             requestError: '请求错误',
             copied: '已复制',
-            formatted: '请求已格式化',
+            formattedMsg: '请求已格式化',
             noContent: '没有内容可格式化',
-            invalidUrl: '请输入有效的 URL'
+            invalidUrl: '请输入有效的 URL',
+            enterUrl: '请输入端点 URL',
+            enterBody: '请输入请求体',
+            requestCleared: '请求已清空',
+            historyCleared: '历史记录已清空'
         }
     };
 
     // 初始化 WebService 模块
     function initWebService(language = 'zh') {
+        currentLanguage = language;
+        applyWebServiceLanguage(language);
         setupEventListeners();
         loadHistory();
     }
@@ -157,14 +202,15 @@
         const endpoint = document.getElementById('wsEndpoint').value.trim();
         const soapAction = document.getElementById('wsSoapAction').value.trim();
         const requestBody = document.getElementById('wsRequestBody').value.trim();
+        const t = webserviceTranslations[currentLanguage];
 
         if (!endpoint) {
-            showMessage('请输入端点 URL', 'error');
+            showMessage(t.enterUrl, 'error');
             return;
         }
 
         if (!requestBody) {
-            showMessage('请输入请求体', 'error');
+            showMessage(t.enterBody, 'error');
             return;
         }
 
@@ -174,7 +220,7 @@
         // 显示加载状态
         const sendBtn = document.getElementById('wsSendBtn');
         const originalText = sendBtn.textContent;
-        sendBtn.textContent = '发送中...';
+        sendBtn.textContent = t.sending;
         sendBtn.disabled = true;
 
         const startTime = Date.now();
@@ -223,9 +269,9 @@
                 timestamp: new Date().toISOString()
             });
 
-            showMessage('请求成功', 'success');
+            showMessage(t.requestSent, 'success');
         } catch (error) {
-            showMessage(`请求错误: ${error.message}`, 'error');
+            showMessage(`${t.requestError}: ${error.message}`, 'error');
             document.getElementById('wsResponseRaw').textContent = `Error: ${error.message}`;
             document.getElementById('wsResponseRaw').style.display = 'block';
         } finally {
@@ -308,34 +354,36 @@
 
     // 格式化请求
     function formatRequest() {
+        const t = webserviceTranslations[currentLanguage];
         const requestBody = document.getElementById('wsRequestBody').value.trim();
         if (!requestBody) {
-            showMessage('没有内容可格式化', 'error');
+            showMessage(t.noContent, 'error');
             return;
         }
 
         try {
             const formatted = formatXML(requestBody);
             document.getElementById('wsRequestBody').value = formatted;
-            showMessage('请求已格式化', 'success');
+            showMessage(t.formattedMsg, 'success');
         } catch (e) {
-            showMessage('格式化失败: ' + e.message, 'error');
+            showMessage(`格式化失败: ${e.message}`, 'error');
         }
     }
 
     // 清空请求
     function clearRequest() {
+        const t = webserviceTranslations[currentLanguage];
         document.getElementById('wsEndpoint').value = '';
         document.getElementById('wsSoapAction').value = '';
-        document.getElementById('wsNamespace').value = '';
         document.getElementById('wsRequestBody').value = '';
 
         // 清空头部
         const headerList = document.getElementById('wsHeaderList');
+        const headerLabels = t;
         headerList.innerHTML = `
             <div class="ws-header-item">
-                <input type="text" class="ws-header-key" placeholder="键">
-                <input type="text" class="ws-header-value" placeholder="值">
+                <input type="text" class="ws-header-key" placeholder="${headerLabels.headerKey}">
+                <input type="text" class="ws-header-value" placeholder="${headerLabels.headerValue}">
                 <button class="ws-remove-header" onclick="this.parentElement.remove()">×</button>
             </div>
         `;
@@ -346,36 +394,38 @@
         document.getElementById('wsResponseFormatted').style.display = 'none';
         document.getElementById('wsResponseHeaders').innerHTML = '';
 
-        showMessage('请求已清空', 'success');
+        showMessage(t.requestCleared, 'success');
     }
 
     // 复制请求
     function copyRequest() {
+        const t = webserviceTranslations[currentLanguage];
         const requestBody = document.getElementById('wsRequestBody').value;
         if (!requestBody) {
-            showMessage('没有内容可复制', 'error');
+            showMessage(t.noContent, 'error');
             return;
         }
 
         navigator.clipboard.writeText(requestBody).then(() => {
-            showMessage('已复制到剪贴板', 'success');
+            showMessage(t.copied, 'success');
         }).catch(err => {
-            showMessage('复制失败: ' + err, 'error');
+            showMessage(`${t.requestError}: ${err}`, 'error');
         });
     }
 
     // 复制响应
     function copyResponse() {
+        const t = webserviceTranslations[currentLanguage];
         const responseText = document.getElementById('wsResponseRaw').textContent;
         if (!responseText) {
-            showMessage('没有响应内容可复制', 'error');
+            showMessage(t.noContent, 'error');
             return;
         }
 
         navigator.clipboard.writeText(responseText).then(() => {
-            showMessage('已复制到剪贴板', 'success');
+            showMessage(t.copied, 'success');
         }).catch(err => {
-            showMessage('复制失败: ' + err, 'error');
+            showMessage(`${t.requestError}: ${err}`, 'error');
         });
     }
 
@@ -411,12 +461,13 @@
 
     // 添加请求头
     function addHeader() {
+        const t = webserviceTranslations[currentLanguage];
         const headerList = document.getElementById('wsHeaderList');
         const headerItem = document.createElement('div');
         headerItem.className = 'ws-header-item';
         headerItem.innerHTML = `
-            <input type="text" class="ws-header-key" placeholder="键">
-            <input type="text" class="ws-header-value" placeholder="值">
+            <input type="text" class="ws-header-key" placeholder="${t.headerKey}">
+            <input type="text" class="ws-header-value" placeholder="${t.headerValue}">
             <button class="ws-remove-header" onclick="this.parentElement.remove()">×</button>
         `;
         headerList.appendChild(headerItem);
@@ -458,11 +509,12 @@
 
     // 更新历史记录 UI
     function updateHistoryUI() {
+        const t = webserviceTranslations[currentLanguage];
         const historyList = document.getElementById('wsHistoryList');
         if (!historyList) return;
 
         if (webserviceHistory.length === 0) {
-            historyList.innerHTML = '<div class="ws-empty-history">暂无请求历史</div>';
+            historyList.innerHTML = `<div class="ws-empty-history">${t.noHistory}</div>`;
             return;
         }
 
@@ -498,6 +550,7 @@
 
     // 清空历史记录
     function clearHistory() {
+        const t = webserviceTranslations[currentLanguage];
         webserviceHistory = [];
         try {
             localStorage.removeItem('webserviceHistory');
@@ -505,7 +558,7 @@
             console.warn('Failed to clear history:', e);
         }
         updateHistoryUI();
-        showMessage('历史记录已清空', 'success');
+        showMessage(t.historyCleared, 'success');
     }
 
     // 显示消息
@@ -543,6 +596,7 @@
     window.webserviceModule = {
         init: initWebService,
         clearHistory: clearHistory,
-        loadHistory: loadHistory
+        loadHistory: loadHistory,
+        setLanguage: applyWebServiceLanguage
     };
 })();

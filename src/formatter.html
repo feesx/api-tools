@@ -1852,16 +1852,12 @@
                 <div class="ws-panel-content">
                     <div class="ws-input-group">
                         <label id="wsEndpointLabel">端点 URL</label>
-                        <input type="text" id="wsEndpoint" placeholder="https://example.com/service?wsdl" value="http://localhost:8080/service">
+                        <input type="text" id="wsEndpoint" placeholder="https://example.com/service?wsdl" value="http://localhost:8082/yxyk/ws/v1/thirdparty">
                     </div>
                     <div class="ws-input-row">
                         <div class="ws-input-group">
-                            <label id="wsSoapActionLabel">SOAP Action</label>
+                            <label id="wsSoapActionLabel">SOAP Action（可选）</label>
                             <input type="text" id="wsSoapAction" placeholder="http://example.com/action">
-                        </div>
-                        <div class="ws-input-group">
-                            <label id="wsNamespaceLabel">命名空间</label>
-                            <input type="text" id="wsNamespace" placeholder="http://example.com/namespace">
                         </div>
                     </div>
                     <div class="ws-headers-section">
@@ -1886,13 +1882,15 @@
                                 <button class="ws-small-btn" id="wsCopyReqBtn">复制</button>
                             </div>
                         </div>
-                        <textarea id="wsRequestBody" placeholder="<soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;>&#10;  <soap:Body>&#10;    <!-- Your SOAP body here -->&#10;  </soap:Body>&#10;</soap:Envelope>"><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <m:GetStockPrice xmlns:m="http://example.com/stock">
-      <m:StockName>GOOG</m:StockName>
-    </m:GetStockPrice>
-  </soap:Body>
-</soap:Envelope></textarea>
+                        <textarea id="wsRequestBody" placeholder="<soapenv:Envelope xmlns:soapenv=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&#10;  <soapenv:Body>&#10;    <!-- Your SOAP body here -->&#10;  </soapenv:Body>&#10;</soapenv:Envelope>"><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:web="http://www.yxyk.top/webservice"> 
+    <soapenv:Header/> 
+    <soapenv:Body> 
+       <web:service> 
+          <arg0>你的请求内容</arg0> 
+       </web:service> 
+    </soapenv:Body> 
+ </soapenv:Envelope></textarea>
                     </div>
                     <div class="ws-send-section">
                         <button class="ws-send-btn" id="wsSendBtn">发送请求</button>
