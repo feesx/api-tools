@@ -57,6 +57,7 @@ const translations = {
             import: 'Import',
             export: 'Export',
             clearHistory: 'Clear',
+            deleteHistory: 'Delete',
             search: 'Search',
             noHistory: 'No request history',
             requestConfig: 'Request Configuration',
@@ -163,6 +164,7 @@ const translations = {
             import: '导入',
             export: '导出',
             clearHistory: '清空',
+            deleteHistory: '删除',
             search: '搜索',
             noHistory: '暂无请求历史',
             requestConfig: '请求配置',
@@ -2067,6 +2069,14 @@ function clearHistory() {
     showResponseMessage('历史记录已清空', 'info');
 }
 
+function deleteHistoryItem(id) {
+    const history = JSON.parse(localStorage.getItem('postmanHistory') || '[]');
+    const updatedHistory = history.filter(item => item.id !== id);
+    localStorage.setItem('postmanHistory', JSON.stringify(updatedHistory));
+    updateHistoryList();
+    showResponseMessage('历史记录已删除', 'info');
+}
+
 function updateHistoryList() {
     const history = JSON.parse(localStorage.getItem('postmanHistory') || '[]');
     const historyList = document.getElementById('historyList');
@@ -2127,6 +2137,7 @@ function updateHistoryList() {
                             <div class="history-item-url">${item.url}</div>
                             <div class="history-item-time">${item.responseTime}ms</div>
                         </div>
+                        <button class="history-item-delete" data-delete-id="${item.id}" title="Delete">×</button>
                     </div>
                 `;
             });
@@ -2140,9 +2151,21 @@ function updateHistoryList() {
     
     historyList.innerHTML = html;
     
+    // 添加删除按钮点击事件
+    document.querySelectorAll('.history-item-delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.dataset.deleteId);
+            deleteHistoryItem(id);
+        });
+    });
+    
     // 添加点击事件
     document.querySelectorAll('.history-item').forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            if (e.target.classList.contains('history-item-delete')) {
+                return;
+            }
             const id = parseInt(this.dataset.id);
             const historyItem = history.find(h => h.id === id);
             if (historyItem) {
