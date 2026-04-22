@@ -59,87 +59,114 @@
 
     parseMarkdown(md) {
       if (!md) return '';
-      let html = md;
 
-      const codeBlocks = [];
-      html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(match, lang, code) {
-        codeBlocks.push({ lang: lang, code: this.escapeHtml(code) });
-        return '%%CODEBLOCK' + (codeBlocks.length - 1) + '%%';
-      }.bind(this));
+      const lines = md.split('\n');
+      let html = '';
+      let inCodeBlock = false;
+      let codeContent = '';
+      let codeLang = '';
+      const codeBlockPlaceholders = [];
+      let headingCounter = 0;
 
-      const inlineCodes = [];
-      html = html.replace(/`([^`]+)`/g, function(match, code) {
-        inlineCodes.push(this.escapeHtml(code));
-        return '%%INLINECODE' + (inlineCodes.length - 1) + '%%';
-      }.bind(this));
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
 
-      html = this.escapeHtml(html);
+        if (line.trimStart().startsWith('```')) {
+          if (!inCodeBlock) {
+            inCodeBlock = true;
+            codeLang = line.trimStart().substring(3).trim();
+            codeContent = '';
+          } else {
+            inCodeBlock = false;
+            const placeholder = '%%CODEBLOCK' + codeBlockPlaceholders.length + '%%';
+            const langAttr = codeLang ? ' class="language-' + codeLang + '"' : '';
+            codeBlockPlaceholders.push('<pre><code' + langAttr + '>' + this.escapeHtml(codeContent) + '</code></pre>');
+            html += placeholder + '\n';
+          }
+          continue;
+        }
 
-      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-      html = html.replace(/^---$/gm, '<hr>');
-      html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        if (inCodeBlock) {
+          codeContent += (codeContent ? '\n' : '') + line;
+          continue;
+        }
+
+        html += line + '\n';
+      }
+
+      if (inCodeBlock) {
+        const placeholder = '%%CODEBLOCK' + codeBlockPlaceholders.length + '%%';
+        const langAttr = codeLang ? ' class="language-' + codeLang + '"' : '';
+        codeBlockPlaceholders.push('<pre><code' + langAttr + '>' + this.escapeHtml(codeContent) + '</code></pre>');
+        html += placeholder + '\n';
+      }
+
+      let result = html;
+      
+      result = this.escapeHtml(result);
+      
+      result = result.replace(/^(#{1,6})\s+(.+)$/gm, function(match, hashes, content) {
+        const id = 'heading-' + (headingCounter++);
+        const level = hashes.length;
+        return '<h' + level + ' id="' + id + '">' + content + '</h' + level + '>';
+      });
+
+      result = result.replace(/^---$/gm, '<hr>');
+      result = result.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+      result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+      result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
 
       const tableRegex = /\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)*)/g;
-      html = html.replace(tableRegex, function(match, header, body) {
+      result = result.replace(tableRegex, function(match, header, body) {
         const headers = header.split('|').map(h => h.trim()).filter(h => h);
         const rows = body.trim().split('\n').map(row => {
           return row.split('|').map(c => c.trim()).filter(c => c);
         });
         let tableHtml = '<table><thead><tr>';
-        headers.forEach(h => { tableHtml += `<th>${h}</th>`; });
+        headers.forEach(h => { tableHtml += '<th>' + h + '</th>'; });
         tableHtml += '</tr></thead><tbody>';
         rows.forEach(row => {
           tableHtml += '<tr>';
-          row.forEach(cell => { tableHtml += `<td>${cell}</td>`; });
+          row.forEach(cell => { tableHtml += '<td>' + cell + '</td>'; });
           tableHtml += '</tr>';
         });
         tableHtml += '</tbody></table>';
         return tableHtml;
       });
 
-      html = html.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
-      html = html.replace(/(<li>.*<\/li>\n?)+/g, function(match) {
+      result = result.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
+      result = result.replace(/(<li>.*<\/li>\n?)+/g, function(match) {
         return '<ul>' + match + '</ul>';
       });
 
-      html = html.replace(/\n\n/g, '</p><p>');
-      html = html.replace(/\n/g, '<br>');
+      result = result.replace(/\n\n/g, '</p><p>');
+      result = result.replace(/\n/g, '<br>');
 
-      if (!html.startsWith('<')) {
-        html = '<p>' + html + '</p>';
+      if (!result.startsWith('<')) {
+        result = '<p>' + result + '</p>';
       }
 
-      for (let i = 0; i < codeBlocks.length; i++) {
-        const block = codeBlocks[i];
-        const langAttr = block.lang ? ` class="language-${block.lang}"` : '';
-        html = html.replace(`%%CODEBLOCK${i}%%`, `<pre><code${langAttr}>${block.code}</code></pre>`);
+      for (let i = 0; i < codeBlockPlaceholders.length; i++) {
+        result = result.replace('%%CODEBLOCK' + i + '%%', codeBlockPlaceholders[i]);
       }
 
-      for (let i = 0; i < inlineCodes.length; i++) {
-        html = html.replace(`%%INLINECODE${i}%%`, `<code>${inlineCodes[i]}</code>`);
-      }
+      result = result.replace(/<br>\s*(<h[1-6]>)/g, '$1');
+      result = result.replace(/(<\/h[1-6]>)\s*<br>/g, '$1');
+      result = result.replace(/<br>\s*(<hr>)/g, '$1');
+      result = result.replace(/(<hr>)\s*<br>/g, '$1');
+      result = result.replace(/<br>\s*(<blockquote>)/g, '$1');
+      result = result.replace(/(<\/blockquote>)\s*<br>/g, '$1');
+      result = result.replace(/<br>\s*(<table>)/g, '$1');
+      result = result.replace(/(<\/table>)\s*<br>/g, '$1');
+      result = result.replace(/<br>\s*(<pre>)/g, '$1');
+      result = result.replace(/(<\/pre>)\s*<br>/g, '$1');
+      result = result.replace(/<br>\s*(<ul>)/g, '$1');
+      result = result.replace(/(<\/ul>)\s*<br>/g, '$1');
+      result = result.replace(/<br><\/p>/g, '</p>');
 
-      html = html.replace(/<br>\s*(<h[1-6]>)/g, '$1');
-      html = html.replace(/(<\/h[1-6]>)\s*<br>/g, '$1');
-      html = html.replace(/<br>\s*(<hr>)/g, '$1');
-      html = html.replace(/(<hr>)\s*<br>/g, '$1');
-      html = html.replace(/<br>\s*(<blockquote>)/g, '$1');
-      html = html.replace(/(<\/blockquote>)\s*<br>/g, '$1');
-      html = html.replace(/<br>\s*(<table>)/g, '$1');
-      html = html.replace(/(<\/table>)\s*<br>/g, '$1');
-      html = html.replace(/<br>\s*(<pre>)/g, '$1');
-      html = html.replace(/(<\/pre>)\s*<br>/g, '$1');
-      html = html.replace(/<br>\s*(<ul>)/g, '$1');
-      html = html.replace(/(<\/ul>)\s*<br>/g, '$1');
-      html = html.replace(/<br><\/p>/g, '</p>');
-
-      return html;
+      return result;
     }
 
     escapeHtml(text) {
@@ -149,7 +176,6 @@
     }
 
     replacePage(html, rawMarkdown) {
-      const toc = this.generateTOC(rawMarkdown);
       document.body.innerHTML = '';
       document.body.className = 'md-viewer';
 
@@ -157,7 +183,7 @@
       container.className = 'md-viewer-container';
       container.innerHTML = `
         <div class="md-sidebar">
-          <div class="md-sidebar-content">${toc}</div>
+          <div class="md-sidebar-content" id="mdTocContent"></div>
         </div>
         <div class="md-toolbar">
           <button class="md-settings-btn" id="mdSettingsBtn" title="设置">⚙</button>
@@ -171,46 +197,33 @@
       `;
 
       document.body.appendChild(container);
-      this.addHeadingIds();
       this.injectStyles();
       this.setupEventListeners(rawMarkdown, html);
+      this.generateTOCFromDOM();
     }
 
-    addHeadingIds() {
-      setTimeout(() => {
-        const headings = document.querySelectorAll('.md-content h1, .md-content h2, .md-content h3, .md-content h4, .md-content h5, .md-content h6');
-        headings.forEach((h, i) => {
-          h.id = 'heading-' + i;
-        });
-      }, 100);
-    }
+    generateTOCFromDOM() {
+      const tocContent = document.getElementById('mdTocContent');
+      if (!tocContent) return;
 
-    addHeadingIds() {
-      setTimeout(() => {
-        const headings = document.querySelectorAll('.md-content h1, .md-content h2, .md-content h3, .md-content h4, .md-content h5, .md-content h6');
-        headings.forEach((h, i) => {
-          h.id = 'heading-' + i;
-        });
-      }, 100);
-    }
+      const headings = document.querySelectorAll('.md-content h1, .md-content h2, .md-content h3, .md-content h4, .md-content h5, .md-content h6');
 
-    generateTOC(markdown) {
-      const lines = markdown.split('\n');
-      let toc = '';
-      let count = 0;
-
-      for (const line of lines) {
-        const match = line.match(/^(#{1,6})\s+(.+)$/);
-        if (match) {
-          const level = match[1].length;
-          const title = match[2].trim();
-          const id = 'heading-' + (count++);
-          const indent = '  '.repeat(level - 1);
-          toc += `${indent}<a href="#${id}" class="md-toc-item md-toc-h${level}">${title}</a>\n`;
-        }
+      if (headings.length === 0) {
+        tocContent.innerHTML = '<div class="md-toc-empty">暂无标题</div>';
+        return;
       }
 
-      return toc || '<div class="md-toc-empty">暂无标题</div>';
+      let tocHtml = '';
+      headings.forEach((h, i) => {
+        const level = parseInt(h.tagName[1]);
+        const title = h.textContent.trim();
+        const id = h.id || 'heading-' + i;
+        if (!h.id) h.id = id;
+        const indent = '  '.repeat(level - 1);
+        tocHtml += `${indent}<a href="#${id}" class="md-toc-item md-toc-h${level}">${title}</a>\n`;
+      });
+
+      tocContent.innerHTML = tocHtml;
     }
 
     injectStyles() {
@@ -331,7 +344,7 @@
       if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
           dropdownMenu.classList.remove('show');
-          const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Markdown</title><style>body{font-family:sans-serif;line-height:1.6;max-width:900px;margin:0 auto;padding:2rem;}h1,h2{border-bottom:1px solid #ddd;padding-bottom:0.3rem;}code{background:#f0f0f0;padding:0.2rem 0.4rem;}pre{background:#f6f8fa;padding:1rem;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:0.5rem 1rem;}th{background:#f6f8fa;}</style></head><body>${html}</body></html>`;
+          const fullHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Markdown</title><style>body{font-family:sans-serif;line-height:1.6;max-width:900px;margin:0 auto;padding:2rem;}h1,h2{border-bottom:1px solid #ddd;padding-bottom:0.3rem;}code{background:#f0f0f0;padding:0.2rem 0.4rem;}pre{background:#f6f8fa;padding:1rem;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ddd;padding:0.5rem 1rem;}th{background:#f6f8fa;}</style></head><body>' + html + '</body></html>';
           const blob = new Blob([fullHtml], { type: 'text/html' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -371,24 +384,24 @@
         const parsedJSON = JSON.parse(rawJSON);
         this.replacePage(this.formatJSON(parsedJSON), true);
       } catch (error) {
-        this.replacePage(`<div class="json-error">JSON Parse Error: ${error.message}</div>`, false);
+        this.replacePage('<div class="json-error">JSON Parse Error: ' + error.message + '</div>', false);
       }
     }
     formatJSON(obj, level = 0) {
       const indent = '  '.repeat(level);
       if (obj === null) return '<span class="json-null">null</span>';
-      if (typeof obj === 'string') return `<span class="json-string">${this.escapeHtml(JSON.stringify(obj))}</span>`;
-      if (typeof obj === 'number') return `<span class="json-number">${obj}</span>`;
-      if (typeof obj === 'boolean') return `<span class="json-boolean">${obj}</span>`;
+      if (typeof obj === 'string') return '<span class="json-string">' + this.escapeHtml(JSON.stringify(obj)) + '</span>';
+      if (typeof obj === 'number') return '<span class="json-number">' + obj + '</span>';
+      if (typeof obj === 'boolean') return '<span class="json-boolean">' + obj + '</span>';
       if (Array.isArray(obj)) {
         if (obj.length === 0) return '<span class="json-array">[]</span>';
         let html = '<span class="json-array">[</span><br>';
         obj.forEach((item, index) => {
-          html += `${indent}  ${this.formatJSON(item, level + 1)}`;
+          html += indent + '  ' + this.formatJSON(item, level + 1);
           if (index < obj.length - 1) html += '<span class="json-punctuation">,</span>';
           html += '<br>';
         });
-        html += `${indent}<span class="json-array">]</span>`;
+        html += indent + '<span class="json-array">]</span>';
         return html;
       }
       if (typeof obj === 'object') {
@@ -396,17 +409,17 @@
         if (keys.length === 0) return '<span class="json-object">{}</span>';
         let html = '<span class="json-object">{</span><br>';
         keys.forEach((key, index) => {
-          html += `${indent}  <span class="json-key">${this.escapeHtml(JSON.stringify(key))}</span><span class="json-punctuation">:</span> ${this.formatJSON(obj[key], level + 1)}`;
+          html += indent + '  <span class="json-key">' + this.escapeHtml(JSON.stringify(key)) + '</span><span class="json-punctuation">:</span> ' + this.formatJSON(obj[key], level + 1);
           if (index < keys.length - 1) html += '<span class="json-punctuation">,</span>';
           html += '<br>';
         });
-        html += `${indent}<span class="json-object">}</span>`;
+        html += indent + '<span class="json-object">}</span>';
         return html;
       }
       return '';
     }
     replacePage(content, isValid) {
-      document.body.innerHTML = `<pre class="json-pre">${content}</pre>`;
+      document.body.innerHTML = '<pre class="json-pre">' + content + '</pre>';
       document.body.style.fontFamily = 'Courier New, monospace';
       document.body.style.padding = '2rem';
     }

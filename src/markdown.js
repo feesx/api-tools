@@ -3,6 +3,7 @@
 
     let currentLanguage = 'zh';
     let mdFileHistory = [];
+    let headingCounter = 0;
 
     const markdownTranslations = {
         en: {
@@ -88,9 +89,12 @@
             return '%%INLINECODE' + (inlineCodes.length - 1) + '%%';
         });
 
-        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-        html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-        html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+        headingCounter = 0;
+        html = html.replace(/^(#{1,6})\s+(.+)$/gm, function(match, hashes, content) {
+            const id = 'heading-' + (headingCounter++);
+            const level = hashes.length;
+            return `<h${level} id="${id}">${content}</h${level}>`;
+        });
 
         html = html.replace(/^---$/gm, '<hr>');
 
