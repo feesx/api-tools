@@ -729,6 +729,8 @@ function setupEventListeners() {
     document.getElementById('clearXmlInputBtn').addEventListener('click', clearXmlInput);
     document.getElementById('copyXmlOutputBtn').addEventListener('click', copyXmlOutput);
     document.getElementById('downloadXmlBtn').addEventListener('click', downloadXmlContent);
+    document.getElementById('expandXmlBtn').addEventListener('click', expandAll);
+    document.getElementById('collapseXmlBtn').addEventListener('click', collapseAll);
     
     // Postman相关事件
     const sendBtn = document.getElementById('sendRequestBtn');
@@ -1172,19 +1174,102 @@ function formatXML() {
     }
     
     try {
-        const formatted = formatXMLSimple(xmlInput);
-        const highlighted = highlightXML(formatted);
+        nodeIdCounter = 0;
+        const formattedHTML = formatXMLWithCollapsible(xmlInput);
         
-        xmlOutput.innerHTML = highlighted;
+        xmlOutput.innerHTML = formattedHTML;
         emptyState.style.display = 'none';
         xmlOutput.style.display = 'block';
         messageDiv.style.display = 'none';
+        
+        setupCollapsibleElements();
         
     } catch (error) {
         showXmlMessage(`格式化错误: ${error.message}`, 'error');
         emptyState.style.display = 'flex';
         xmlOutput.style.display = 'none';
     }
+}
+
+function formatXMLWithCollapsible(xmlString) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+    
+    if (xmlDoc.querySelector('parsererror')) {
+        throw new Error('XML格式错误');
+    }
+    
+    return formatXMLNode(xmlDoc.documentElement, 0);
+}
+
+function formatXMLNode(node, level = 0) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim();
+        if (text) {
+            return `${'  '.repeat(level)}<span class="xml-text">${escapeHtml(text)}</span>`;
+        }
+        return '';
+    }
+
+    if (node.nodeType === Node.COMMENT_NODE) {
+        return `${'  '.repeat(level)}<span class="xml-comment">&lt;!--${escapeHtml(node.textContent)}--&gt;</span>`;
+    }
+
+    if (node.nodeType === Node.CDATA_SECTION_NODE) {
+        return `${'  '.repeat(level)}<span class="xml-cdata">&lt;![CDATA[${escapeHtml(node.textContent)}]]&gt;</span>`;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+        const tagName = node.tagName;
+        const attributes = Array.from(node.attributes).map(attr => 
+            ` <span class="xml-attribute">${attr.name}</span>=<span class="xml-attribute-value">"${escapeHtml(attr.value)}"</span>`
+        ).join('');
+        
+        const children = Array.from(node.childNodes).filter(child => 
+            child.nodeType === Node.ELEMENT_NODE || 
+            (child.nodeType === Node.TEXT_NODE && child.textContent.trim())
+        );
+
+        const hasChildren = children.length > 0;
+
+        if (!hasChildren) {
+            return `${'  '.repeat(level)}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag"> /&gt;</span>`;
+        }
+
+        const hasOnlyTextChild = children.length === 1 && children[0].nodeType === Node.TEXT_NODE;
+        
+        if (hasOnlyTextChild) {
+            const textContent = children[0].textContent.trim();
+            if (textContent) {
+                return `${'  '.repeat(level)}<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag">&gt;</span><span class="xml-text">${escapeHtml(textContent)}</span><span class="xml-tag">&lt;/${tagName}&gt;</span>`;
+            }
+        }
+
+        const nodeId = `xml-node-${nodeIdCounter++}`;
+        const summary = `&lt;${tagName}${attributes}&gt; (${children.length})`;
+        
+        let html = '';
+        html += `${'  '.repeat(level)}<span class="xml-collapsible" data-id="${nodeId}" style="display: inline-block; cursor: pointer;">`;
+        html += `<span class="xml-toggle-icon">▶</span>`;
+        html += `<span class="xml-tag">&lt;${tagName}</span>${attributes}<span class="xml-tag">&gt;</span>`;
+        html += `<span class="xml-collapsed-summary" style="display: none; color: #888;">${summary}</span>`;
+        html += `</span>`;
+        html += `<div class="xml-collapsed-content" data-parent="${nodeId}" style="display: block;">`;
+        
+        children.forEach((child) => {
+            const childHTML = formatXMLNode(child, level + 1);
+            if (childHTML) {
+                html += `\n${childHTML}`;
+            }
+        });
+        
+        html += `</div>`;
+        html += `\n${'  '.repeat(level)}<span class="xml-tag xml-closing-tag">&lt;/${tagName}&gt;</span>`;
+        
+        return html;
+    }
+
+    return '';
 }
 
 function formatXMLSimple(text) {
@@ -1492,17 +1577,27 @@ function formatXMLWithSyntax(node, level = 0) {
 }
 
 function setupCollapsibleElements() {
-    const collapsibles = document.querySelectorAll('.collapsible');
-    collapsibles.forEach(collapsible => {
-        collapsible.removeEventListener('click', toggleCollapse);
+    const jsonCollapsibles = document.querySelectorAll('.collapsible');
+    const xmlCollapsibles = document.querySelectorAll('.xml-collapsible');
+    
+    jsonCollapsibles.forEach(collapsible => {
+        collapsible.removeEventListener('click', toggleJSONCollapse);
         collapsible.addEventListener('click', function(e) {
             e.stopPropagation();
-            toggleCollapse(this);
+            toggleJSONCollapse(this);
+        });
+    });
+    
+    xmlCollapsibles.forEach(collapsible => {
+        collapsible.removeEventListener('click', toggleXMLCollapse);
+        collapsible.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleXMLCollapse(this);
         });
     });
 }
 
-function toggleCollapse(element) {
+function toggleJSONCollapse(element) {
     const nodeId = element.dataset.id;
     const content = document.querySelector(`.collapsed-content[data-parent="${nodeId}"]`);
     const icon = element.querySelector('.toggle-icon');
@@ -1525,30 +1620,86 @@ function toggleCollapse(element) {
     }
 }
 
-function expandAll() {
-    const contents = document.querySelectorAll('.collapsed-content');
-    const icons = document.querySelectorAll('.toggle-icon');
-    const summaries = document.querySelectorAll('.collapsed-summary');
+function toggleXMLCollapse(element) {
+    const nodeId = element.dataset.id;
+    const content = document.querySelector(`.xml-collapsed-content[data-parent="${nodeId}"]`);
+    const icon = element.querySelector('.xml-toggle-icon');
+    const summary = element.querySelector('.xml-collapsed-summary');
+    const closingTag = content.nextElementSibling;
     
-    contents.forEach(content => content.style.display = 'block');
-    icons.forEach(icon => {
+    if (content) {
+        const isCollapsed = content.style.display === 'none';
+        
+        if (isCollapsed) {
+            content.style.display = 'block';
+            icon.style.transform = 'rotate(90deg)';
+            if (summary) summary.style.display = 'none';
+            if (closingTag && closingTag.classList.contains('xml-closing-tag')) {
+                closingTag.style.display = 'inline';
+            }
+        } else {
+            content.style.display = 'none';
+            icon.style.transform = 'rotate(0deg)';
+            if (summary) summary.style.display = 'inline';
+            if (closingTag && closingTag.classList.contains('xml-closing-tag')) {
+                closingTag.style.display = 'none';
+            }
+        }
+    }
+}
+
+function expandAll() {
+    const jsonContents = document.querySelectorAll('.collapsed-content');
+    const jsonIcons = document.querySelectorAll('.toggle-icon');
+    const jsonSummaries = document.querySelectorAll('.collapsed-summary');
+    
+    const xmlContents = document.querySelectorAll('.xml-collapsed-content');
+    const xmlIcons = document.querySelectorAll('.xml-toggle-icon');
+    const xmlSummaries = document.querySelectorAll('.xml-collapsed-summary');
+    const xmlClosingTags = document.querySelectorAll('.xml-closing-tag');
+    
+    jsonContents.forEach(content => content.style.display = 'block');
+    jsonIcons.forEach(icon => {
         icon.classList.add('expanded');
         icon.style.transform = 'rotate(90deg)';
     });
-    summaries.forEach(summary => summary.style.display = 'none');
+    jsonSummaries.forEach(summary => summary.style.display = 'none');
+    
+    xmlContents.forEach(content => {
+        content.style.display = 'block';
+    });
+    xmlIcons.forEach(icon => {
+        icon.style.transform = 'rotate(90deg)';
+    });
+    xmlSummaries.forEach(summary => summary.style.display = 'none');
+    xmlClosingTags.forEach(tag => tag.style.display = 'inline');
 }
 
 function collapseAll() {
-    const contents = document.querySelectorAll('.collapsed-content');
-    const icons = document.querySelectorAll('.toggle-icon');
-    const summaries = document.querySelectorAll('.collapsed-summary');
+    const jsonContents = document.querySelectorAll('.collapsed-content');
+    const jsonIcons = document.querySelectorAll('.toggle-icon');
+    const jsonSummaries = document.querySelectorAll('.collapsed-summary');
     
-    contents.forEach(content => content.style.display = 'none');
-    icons.forEach(icon => {
+    const xmlContents = document.querySelectorAll('.xml-collapsed-content');
+    const xmlIcons = document.querySelectorAll('.xml-toggle-icon');
+    const xmlSummaries = document.querySelectorAll('.xml-collapsed-summary');
+    const xmlClosingTags = document.querySelectorAll('.xml-closing-tag');
+    
+    jsonContents.forEach(content => content.style.display = 'none');
+    jsonIcons.forEach(icon => {
         icon.classList.remove('expanded');
         icon.style.transform = 'rotate(0deg)';
     });
-    summaries.forEach(summary => summary.style.display = 'inline');
+    jsonSummaries.forEach(summary => summary.style.display = 'inline');
+    
+    xmlContents.forEach(content => {
+        content.style.display = 'none';
+    });
+    xmlIcons.forEach(icon => {
+        icon.style.transform = 'rotate(0deg)';
+    });
+    xmlSummaries.forEach(summary => summary.style.display = 'inline');
+    xmlClosingTags.forEach(tag => tag.style.display = 'none');
 }
 
 function calculateJSONStats(obj) {
@@ -1882,6 +2033,7 @@ async function sendHttpRequest() {
         responseRawOutput.textContent = responseText;
         
         // 尝试将响应解析为 JSON 并格式化显示
+        let isJSON = false;
         try {
             const parsedJSON = JSON.parse(responseText);
             const formattedJSON = JSON.stringify(parsedJSON, null, 2);
@@ -1892,6 +2044,7 @@ async function sendHttpRequest() {
             // 为 JSON 添加语法高亮
             const highlightedJSON = formatJSONWithSyntax(parsedJSON);
             responseOutput.innerHTML = highlightedJSON;
+            isJSON = true;
         } catch (error) {
             // 如果不是 JSON，只显示原始响应
             responseOutput.style.display = 'none';
@@ -1899,18 +2052,34 @@ async function sendHttpRequest() {
             responseOutput.style.opacity = '0';
         }
         
-        // 默认显示 JSON 标签页
-        document.querySelector('.response-tabs .tab-button[data-tab="json"]').classList.add('active');
-        document.querySelector('.response-tabs .tab-button[data-tab="raw"]').classList.remove('active');
-        responseOutput.style.display = 'block';
-        responseOutput.style.visibility = 'visible';
-        responseOutput.style.opacity = '1';
-        responseRawOutput.style.display = 'none';
-        responseRawOutput.style.visibility = 'hidden';
-        responseRawOutput.style.opacity = '0';
-        
-        // 确保响应内容可见
-        responseOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // 根据响应类型决定默认显示的标签页
+        if (isJSON) {
+            // JSON 响应默认显示 JSON 标签页
+            document.querySelector('.response-tabs .tab-button[data-tab="json"]').classList.add('active');
+            document.querySelector('.response-tabs .tab-button[data-tab="raw"]').classList.remove('active');
+            responseOutput.style.display = 'block';
+            responseOutput.style.visibility = 'visible';
+            responseOutput.style.opacity = '1';
+            responseRawOutput.style.display = 'none';
+            responseRawOutput.style.visibility = 'hidden';
+            responseRawOutput.style.opacity = '0';
+            
+            // 确保响应内容可见
+            responseOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            // 非 JSON 响应（XML 等）默认显示 Raw 标签页
+            document.querySelector('.response-tabs .tab-button[data-tab="json"]').classList.remove('active');
+            document.querySelector('.response-tabs .tab-button[data-tab="raw"]').classList.add('active');
+            responseOutput.style.display = 'none';
+            responseOutput.style.visibility = 'hidden';
+            responseOutput.style.opacity = '0';
+            responseRawOutput.style.display = 'block';
+            responseRawOutput.style.visibility = 'visible';
+            responseRawOutput.style.opacity = '1';
+            
+            // 确保响应内容可见
+            responseRawOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
         
         // 最后检查并确认响应内容已设置
         console.log('responseOutput final display:', responseOutput.style.display);

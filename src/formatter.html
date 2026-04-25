@@ -329,6 +329,49 @@
             color: #333;
         }
 
+        .xml-collapsible {
+            display: inline-block;
+            cursor: pointer;
+            padding: 2px 4px 2px 10px;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+            position: relative;
+        }
+
+        .xml-collapsible:hover {
+            background-color: rgba(214, 51, 132, 0.1);
+        }
+
+        .xml-toggle-icon {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 4px;
+            margin-left: -10px;
+            font-size: 8px;
+            color: #666;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .xml-collapsed-summary {
+            color: #999;
+            font-style: italic;
+            font-size: 12px;
+            margin-left: 8px;
+            display: none;
+        }
+
+        .xml-collapsed-content {
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        .xml-closing-tag {
+            display: inline;
+        }
+
         /* Postman styles */
         .request-config {
             display: flex;
@@ -2372,6 +2415,8 @@
             <div class="panel-header">
                 <h2 id="xmlOutputPanelHeader">格式化结果</h2>
                 <div class="actions">
+                    <button class="action-btn expand-btn" id="expandXmlBtn" title="展开全部">展开</button>
+                    <button class="action-btn collapse-btn" id="collapseXmlBtn" title="折叠全部">折叠</button>
                     <button class="action-btn copy-btn" id="copyXmlOutputBtn">复制</button>
                     <button class="action-btn download-btn" id="downloadXmlBtn">下载</button>
                 </div>
