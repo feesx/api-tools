@@ -4,6 +4,7 @@
     let currentLanguage = 'zh';
     let mdFileHistory = [];
     let headingCounter = 0;
+    let currentFile = null;
 
     const markdownTranslations = {
         en: {
@@ -18,13 +19,15 @@
             openFile: 'Open File',
             copyHtml: 'Copy HTML',
             downloadHtml: 'Download HTML',
+            saveFile: 'Save',
             fileOpened: 'File opened',
             formatted: 'Markdown formatted',
             noContent: 'No content to format',
             cleared: 'Markdown cleared',
             copied: 'Copied',
             copiedHtml: 'HTML copied',
-            htmlDownloaded: 'HTML downloaded'
+            htmlDownloaded: 'HTML downloaded',
+            fileSaved: 'File saved'
         },
         zh: {
             markdown: 'Markdown',
@@ -38,13 +41,15 @@
             openFile: '打开文件',
             copyHtml: '复制 HTML',
             downloadHtml: '下载 HTML',
+            saveFile: '保存',
             fileOpened: '文件已打开',
             formatted: 'Markdown 已格式化',
             noContent: '没有内容可格式化',
             cleared: 'Markdown 已清空',
             copied: '已复制',
             copiedHtml: 'HTML 已复制',
-            htmlDownloaded: 'HTML 已下载'
+            htmlDownloaded: 'HTML 已下载',
+            fileSaved: '文件已保存'
         }
     };
 
@@ -68,6 +73,7 @@
         setText('mdOpenFileBtn', t.openFile);
         setText('mdCopyOutputBtn', t.copyHtml);
         setText('mdDownloadBtn', t.downloadHtml);
+        setText('mdSaveBtn', t.saveFile);
     }
 
     function parseMarkdown(md) {
@@ -312,6 +318,55 @@ ${preview}
         reader.readAsText(file);
     }
 
+    async function openFileWithHandle() {
+        const t = markdownTranslations[currentLanguage];
+        try {
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                    description: 'Markdown Files',
+                    accept: {
+                        'text/markdown': ['.md', '.markdown', '.mkd'],
+                        'text/plain': ['.txt']
+                    }
+                }],
+                multiple: false
+            });
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            document.getElementById('mdInput').value = content;
+            updatePreview();
+            addToHistory(file.name);
+            currentFile = { handle: fileHandle, name: file.name };
+            showMessage(t.fileOpened, 'success');
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                showMessage(`打开文件失败: ${err}`, 'error');
+            }
+        }
+    }
+
+    async function saveFile() {
+        const t = markdownTranslations[currentLanguage];
+        const content = document.getElementById('mdInput').value;
+        if (!content) {
+            showMessage(t.noContent, 'error');
+            return;
+        }
+
+        if (currentFile && currentFile.handle) {
+            try {
+                const writable = await currentFile.handle.createWritable();
+                await writable.write(content);
+                await writable.close();
+                showMessage(t.fileSaved, 'success');
+            } catch (err) {
+                showMessage(`保存失败: ${err}`, 'error');
+            }
+        } else {
+            showMessage('请使用"打开文件"选择要保存的文件', 'error');
+        }
+    }
+
     function handleFileSelect(event) {
         const file = event.target.files[0];
         if (file) {
@@ -394,7 +449,11 @@ ${preview}
         const openFileBtn = document.getElementById('mdOpenFileBtn');
         if (openFileBtn) {
             openFileBtn.addEventListener('click', function() {
-                document.getElementById('mdFileInput').click();
+                if (window.showOpenFilePicker) {
+                    openFileWithHandle();
+                } else {
+                    document.getElementById('mdFileInput').click();
+                }
             });
         }
 
@@ -411,6 +470,11 @@ ${preview}
         const downloadBtn = document.getElementById('mdDownloadBtn');
         if (downloadBtn) {
             downloadBtn.addEventListener('click', downloadHtml);
+        }
+
+        const saveBtn = document.getElementById('mdSaveBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', saveFile);
         }
 
         const mdInput = document.getElementById('mdInput');
