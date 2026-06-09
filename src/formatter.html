@@ -290,6 +290,13 @@
             color: #22863a;
         }
 
+        /* SQL syntax highlighting */
+        .sql-keyword { color: #0066cc; font-weight: 600; }
+        .sql-function { color: #cc6600; }
+        .sql-string { color: #008800; }
+        .sql-number { color: #cc0000; }
+        .sql-comment { color: #888888; font-style: italic; }
+
         .xml-tag {
             color: #005cc5;
             font-weight: 600;
@@ -2281,6 +2288,7 @@
                 <button class="tab" data-tab="json">JSON</button>
                 <button class="tab" data-tab="xml">XML</button>
                 <button class="tab" data-tab="webservice">WebService</button>
+                <button class="tab" data-tab="sql">SQL</button>
                 <button class="tab" data-tab="markdown">Markdown</button>
                 <button class="tab" data-tab="office">Office</button>
             </div>
@@ -2728,7 +2736,7 @@
                             <button class="tab-button active" data-tab="json">JSON</button>
                             <button class="tab-button" data-tab="raw">Raw</button>
                         </div>
-                        <pre id="responseOutput" style="display: none; visibility: hidden; opacity: 0; min-height: 200px; background-color: white; border: 1px solid #ccc; padding: 10px; white-space: pre; font-family: 'Courier New', Courier, monospace;"></pre>
+                        <div id="responseOutput" style="display: none; visibility: hidden; opacity: 0; min-height: 200px; background-color: white; border: 1px solid #ccc; padding: 10px; white-space: pre; font-family: 'Courier New', Courier, monospace;"></div>
                         <pre id="responseRawOutput" style="display: none; visibility: hidden; opacity: 0; min-height: 200px; background-color: #f8f9fa; border: 1px solid #ccc; padding: 10px; white-space: pre; font-family: 'Courier New', Courier, monospace;"></pre>
                     </div>
                 </div>
@@ -2757,6 +2765,53 @@
             </div>
             <div class="office-result" id="officeResult" style="display: none;">
                 <div id="officeResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL Formatter -->
+    <div class="main-container" id="sqlContainer" style="display: none;">
+        <div class="panel">
+            <div class="panel-header">
+                <h2>SQL Input</h2>
+                <div class="actions">
+                    <button id="formatSqlBtn" class="action-btn" style="background-color: #2196f3; color: white; font-weight: 600;">Format SQL</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="editor-container">
+                    <div class="line-numbers" id="sqlLineNumbers">1</div>
+                    <div class="editor-wrapper">
+                        <textarea id="sqlInput" placeholder="Paste SQL here...">SELECT u.id, u.name, o.order_date, o.amount
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id
+WHERE u.status = 'active'
+AND o.amount > 100
+ORDER BY o.order_date DESC
+LIMIT 50</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2>Formatted SQL</h2>
+                <div class="actions">
+                    <button class="action-btn copy-btn" id="copySqlOutputBtn">Copy</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="sqlMessage" class="message"></div>
+                <div class="output-container" id="sqlOutputContainer">
+                    <div class="empty-state" id="sqlEmptyState" style="display: flex;">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z"/>
+                        </svg>
+                        <p>Click "Format SQL" to format your query</p>
+                    </div>
+                    <pre id="sqlOutput" style="display: none;"></pre>
+                </div>
             </div>
         </div>
     </div>
@@ -2830,6 +2885,7 @@ function hello() {
 
     <input type="file" id="mdFileInput" accept=".md,.markdown,.txt" style="display: none;">
 
+    <script src="libs/sql-formatter.min.js"></script>
     <script src="libs/xlsx.full.min.js"></script>
     <script src="libs/mammoth.browser.min.js"></script>
     <script src="formatter.js"></script>

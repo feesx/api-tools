@@ -687,6 +687,7 @@ function switchTab(tabName) {
     document.getElementById('webserviceContainer').style.display = 'none';
     document.getElementById('markdownContainer').style.display = 'none';
     document.getElementById('officeContainer').style.display = 'none';
+    document.getElementById('sqlContainer').style.display = 'none';
     
     // 显示对应容器
     if (tabName === 'json') {
@@ -709,6 +710,9 @@ function switchTab(tabName) {
         }
     } else if (tabName === 'office') {
         document.getElementById('officeContainer').style.display = 'flex';
+    } else if (tabName === 'sql') {
+        document.getElementById('sqlContainer').style.display = 'flex';
+        updateSqlLineNumbers();
     }
 }
 
@@ -1599,7 +1603,12 @@ function setupCollapsibleElements() {
 
 function toggleJSONCollapse(element) {
     const nodeId = element.dataset.id;
-    const content = document.querySelector(`.collapsed-content[data-parent="${nodeId}"]`);
+    // 在当前容器内查找，避免匹配到隐藏容器中的元素
+    var container = element.closest('.output-container') || element.closest('#responseContainer') || element.closest('.panel-content');
+    var content = container ? container.querySelector('.collapsed-content[data-parent="' + nodeId + '"]') : null;
+    if (!content) {
+        content = document.querySelector('.collapsed-content[data-parent="' + nodeId + '"]');
+    }
     const icon = element.querySelector('.toggle-icon');
     const summary = element.querySelector('.collapsed-summary');
     
@@ -2044,6 +2053,7 @@ async function sendHttpRequest() {
             // 为 JSON 添加语法高亮
             const highlightedJSON = formatJSONWithSyntax(parsedJSON);
             responseOutput.innerHTML = highlightedJSON;
+            setupCollapsibleElements();
             isJSON = true;
         } catch (error) {
             // 如果不是 JSON，只显示原始响应
@@ -2933,4 +2943,147 @@ function buildWordToc(html) {
         
         reader.readAsArrayBuffer(file);
     }
+
+    // ============================================================
+    //  SQL Formatter — 使用 sql-formatter 库 (www.sql-formatter.com)
+    // ============================================================
+
+    // 关键字和函数集合（用于高亮）
+    var SQL_KEYWORDS = new Set([
+        'SELECT','FROM','WHERE','AND','OR','NOT','IN','LIKE','BETWEEN',
+        'JOIN','LEFT','RIGHT','INNER','OUTER','FULL','CROSS','ON',
+        'GROUP','BY','HAVING','ORDER','ASC','DESC','LIMIT','OFFSET',
+        'INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE',
+        'ALTER','DROP','INDEX','VIEW','AS','DISTINCT','UNION','ALL',
+        'NULL','IS','TRUE','FALSE','CASE','WHEN','THEN','ELSE','END',
+        'EXISTS','PRIMARY','KEY','FOREIGN','REFERENCES','DEFAULT',
+        'TRUNCATE','UNIQUE','CHECK','INNER','UNION'
+    ]);
+
+    var SQL_FUNCTIONS = new Set([
+        'COUNT','SUM','AVG','MIN','MAX','COALESCE','CAST','CONVERT',
+        'UPPER','LOWER','CONCAT','SUBSTRING','TRIM','LENGTH','REPLACE',
+        'NOW','CURDATE','CURTIME','DATE','YEAR','MONTH','DAY','HOUR',
+        'ROUND','FLOOR','CEIL','ABS','MOD','IFNULL','IF','NULLIF',
+        'GROUP_CONCAT','CONCAT_WS','DATE_FORMAT','DATEDIFF','DATE_ADD',
+        'DATE_SUB','UNIX_TIMESTAMP','FROM_UNIXTIME'
+    ]);
+
+    function highlightSQL(sql) {
+        function esc(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+        var html = '';
+        var i = 0;
+        while (i < sql.length) {
+            var ch = sql[i];
+            // 字符串 'xxx' 或 "xxx"
+            if (ch === "'" || ch === '"') {
+                var quote = ch;
+                var j = i + 1;
+                while (j < sql.length && sql[j] !== quote) {
+                    if (sql[j] === '\\') j++; // 跳过转义
+                    j++;
+                }
+                if (j < sql.length) j++;
+                html += '<span class="sql-string">' + esc(sql.substring(i, j)) + '</span>';
+                i = j;
+                continue;
+            }
+            // 注释 --
+            if (ch === '-' && sql[i + 1] === '-') {
+                var j = sql.indexOf('\n', i);
+                if (j === -1) j = sql.length;
+                html += '<span class="sql-comment">' + esc(sql.substring(i, j)) + '</span>';
+                i = j;
+                continue;
+            }
+            // 数字
+            if (/[0-9]/.test(ch)) {
+                var j = i;
+                while (j < sql.length && /[0-9.]/.test(sql[j])) j++;
+                html += '<span class="sql-number">' + sql.substring(i, j) + '</span>';
+                i = j;
+                continue;
+            }
+            // 单词
+            if (/[A-Za-z_]/.test(ch)) {
+                var j = i;
+                while (j < sql.length && /[A-Za-z0-9_]/.test(sql[j])) j++;
+                var word = sql.substring(i, j);
+                var upper = word.toUpperCase();
+                if (SQL_KEYWORDS.has(upper)) {
+                    html += '<span class="sql-keyword">' + esc(word) + '</span>';
+                } else if (SQL_FUNCTIONS.has(upper)) {
+                    html += '<span class="sql-function">' + esc(word) + '</span>';
+                } else {
+                    html += esc(word);
+                }
+                i = j;
+                continue;
+            }
+            // 其他字符原样
+            html += esc(ch);
+            i++;
+        }
+        return html;
+    }
+
+    // 事件处理
+    document.getElementById('formatSqlBtn').addEventListener('click', function() {
+        var input = document.getElementById('sqlInput').value.trim();
+        var output = document.getElementById('sqlOutput');
+        var empty = document.getElementById('sqlEmptyState');
+        var msg = document.getElementById('sqlMessage');
+
+        if (!input) {
+            empty.style.display = 'flex';
+            output.style.display = 'none';
+            msg.style.display = 'none';
+            return;
+        }
+
+        try {
+            var formatted = sqlFormatter.format(input, { language: 'mysql' });
+            var highlighted = highlightSQL(formatted);
+            output.innerHTML = highlighted;
+            empty.style.display = 'none';
+            output.style.display = 'block';
+            msg.style.display = 'none';
+        } catch (e) {
+            msg.textContent = 'SQL format error: ' + e.message;
+            msg.className = 'message error';
+            msg.style.display = 'block';
+        }
+    });
+
+    // 实时输入
+    var sqlInputEl = document.getElementById('sqlInput');
+    sqlInputEl.addEventListener('input', function() {
+        updateSqlLineNumbers();
+    });
+    sqlInputEl.addEventListener('scroll', function() {
+        document.getElementById('sqlLineNumbers').scrollTop = this.scrollTop;
+    });
+    sqlInputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 2;
+        }
+    });
+
+    function updateSqlLineNumbers() {
+        var lines = sqlInputEl.value.split('\\n').length;
+        var html = '';
+        for (var i = 1; i <= lines; i++) html += i + '<br>';
+        document.getElementById('sqlLineNumbers').innerHTML = html;
+    }
+
+    document.getElementById('copySqlOutputBtn').addEventListener('click', function() {
+        navigator.clipboard.writeText(document.getElementById('sqlOutput').textContent);
+    });
+
 })();
