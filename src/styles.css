@@ -579,6 +579,12 @@
         }
 
 
+        .history-item-content {
+            flex: 1;
+            min-width: 0;
+            padding-right: 28px;
+        }
+
         .history-item-delete {
             background: none;
             border: none;
@@ -589,6 +595,9 @@
             opacity: 0;
             transition: opacity 0.2s, color 0.2s;
             flex-shrink: 0;
+            position: absolute;
+            top: 6px;
+            right: 8px;
         }
 
         .history-item:hover .history-item-delete {
@@ -709,6 +718,20 @@
             background-color: #4a5568;
             padding: 2px 8px;
             border-radius: 10px;
+        }
+
+        .history-group-arrow {
+            color: #718096;
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .history-group.collapsed .history-group-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .history-group.collapsed .history-group-items {
+            display: none;
         }
 
         .history-group-items {

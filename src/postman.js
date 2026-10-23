@@ -275,7 +275,7 @@ window.postmanModule = (function() {
         Object.keys(byHost).forEach(host => {
             const g = byHost[host];
             html += '<div class="history-group">';
-            html += '<div class="history-group-header"><h3>' + g.name + '</h3><span class="history-group-count">' + g.items.length + '</span></div>';
+            html += '<div class="history-group-header"><span class="history-group-arrow">▾</span><h3>' + g.name + '</h3><span class="history-group-count">' + g.items.length + '</span></div>';
             html += '<div class="history-group-items">';
             g.items.forEach(item => {
                 const success = item.status >= 200 && item.status < 300;
@@ -295,6 +295,11 @@ window.postmanModule = (function() {
         });
         historyList.innerHTML = html;
 
+        historyList.querySelectorAll('.history-group-header').forEach(header => {
+            header.addEventListener('click', function() {
+                this.closest('.history-group').classList.toggle('collapsed');
+            });
+        });
         historyList.querySelectorAll('.history-item-delete').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
