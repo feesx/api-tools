@@ -180,15 +180,21 @@ window.postmanModule = (function() {
         }
     }
 
+    function getResponsePlainText() {
+        const text = document.getElementById('responseRawOutput').textContent;
+        if (!text) return '';
+        try { return JSON.stringify(JSON.parse(text), null, 2); } catch (e) { return text; }
+    }
+
     function copyResponse() {
-        const text = document.getElementById('responseOutput').textContent;
+        const text = getResponsePlainText();
         if (!text) { showResponseMessage('没有响应内容可复制', 'error'); return; }
         navigator.clipboard.writeText(text).then(() => showResponseMessage('已复制到剪贴板', 'success'))
             .catch(err => showResponseMessage('复制失败: ' + err, 'error'));
     }
 
     function downloadResponse() {
-        const text = document.getElementById('responseOutput').textContent;
+        const text = getResponsePlainText();
         if (!text) { showResponseMessage('没有响应内容可下载', 'error'); return; }
         const blob = new Blob([text], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
