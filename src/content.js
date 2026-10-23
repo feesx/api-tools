@@ -371,9 +371,17 @@
     }
     init() { this.checkForJSONContent(); this.setupMessageListeners(); }
     checkForJSONContent() {
+      if (!document.body) return;
       const contentType = document.contentType || '';
-      const bodyText = document.body.textContent.trim();
-      if (contentType.includes('application/json') || this.looksLikeJSON(bodyText)) this.formatPage(bodyText);
+      const isJsonDocument = contentType.includes('json');
+      // 浏览器原生渲染纯文本 JSON 时，body 里只会有一个 <pre>
+      const bodyChildren = document.body.children;
+      const isSinglePre = bodyChildren.length === 1 && bodyChildren[0].tagName === 'PRE';
+      // 普通网页（SPA/HTML 应用）不接管，避免破坏页面自身渲染
+      if (!isJsonDocument && !isSinglePre) return;
+      const bodyText = (isSinglePre ? bodyChildren[0].textContent : document.body.textContent).trim();
+      if (!bodyText || !this.looksLikeJSON(bodyText)) return;
+      this.formatPage(bodyText);
     }
     looksLikeJSON(text) {
       text = text.trim();
